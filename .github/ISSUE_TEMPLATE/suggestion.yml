@@ -1,0 +1,46 @@
+name: Suggestion
+description: An idea for a new feature or an improvement
+title: "[Suggestion] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got an idea for Healthify? Share it here!
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before suggesting
+      options:
+        - label: I searched the existing issues and this hasn't been suggested yet
+          required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: What is it about?
+      options:
+        - Health bars
+        - Damage numbers
+        - Themes
+        - Settings
+        - Compatibility with another mod
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What would you like Healthify to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why?
+      description: What problem would it solve, or what would it make better?
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or mock-ups
+      description: Drawings, screenshots or other mods that do something similar

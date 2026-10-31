@@ -1,0 +1,86 @@
+name: Bug report
+description: Something isn't working right in Healthify
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! The more detail you give, the faster it can be fixed.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before reporting
+      options:
+        - label: I searched the existing issues and this hasn't been reported yet
+          required: true
+        - label: I'm using the latest version of Healthify
+          required: true
+  - type: dropdown
+    id: minecraft
+    attributes:
+      label: Minecraft version
+      options:
+        - "1.21.1"
+        - "26.1.2"
+        - "26.3"
+    validations:
+      required: true
+  - type: input
+    id: healthify
+    attributes:
+      label: Healthify version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: shaders
+    attributes:
+      label: Shaders
+      description: Are you using Iris, and if so, with a shader pack on?
+      options:
+        - "No Iris"
+        - "Iris installed, shaders off"
+        - "Iris installed, shaders on"
+    validations:
+      required: true
+  - type: input
+    id: shaderpack
+    attributes:
+      label: Shader pack
+      description: Only if shaders are on
+      placeholder: "Complementary Reimagined"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Describe the bug. What did you expect to happen instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce
+      description: The steps that make the bug happen
+      placeholder: |
+        1. Spawn a zombie
+        2. Hit it with a sword
+        3. The health bar...
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or video
+      description: Drag images or videos in here. For visual bugs this helps a lot.
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other mods
+      description: The mods you have installed, or a link to your modpack. Especially Dynamic Difficulty or other mods that change name tags or rendering.
+  - type: input
+    id: log
+    attributes:
+      label: Log or crash report
+      description: Upload logs/latest.log (or the crash report from crash-reports) to mclo.gs and paste the link here
+      placeholder: "https://mclo.gs/..."
