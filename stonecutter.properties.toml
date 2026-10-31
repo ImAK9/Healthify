@@ -2,7 +2,7 @@ mod.id = "healthify"
 mod.name = "Healthify"
 mod.group = "com.ak.healthify"
 mod.version = "1.0.0"
-mod.license = "All Rights Reserved"
+mod.license = "MIT"
 
 ["1.21.1"]
 mod.mc_range = "[1.21.1]"
