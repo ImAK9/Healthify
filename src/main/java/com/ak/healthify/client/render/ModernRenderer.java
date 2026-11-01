@@ -95,6 +95,7 @@ public final class ModernRenderer {
         if (!draw.quads.isEmpty()) {
             collector.order(order).submitCustomGeometry(pose, barType, (p, consumer) -> {
                 for (DrawList.Quad quad : draw.quads) {
+                    if (quad.texture() != null) continue;
                     quad(consumer, p, quad);
                 }
             });

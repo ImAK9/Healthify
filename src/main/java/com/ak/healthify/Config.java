@@ -1,5 +1,6 @@
 package com.ak.healthify;
 
+import java.util.List;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public final class Config {
@@ -23,7 +24,7 @@ public final class Config {
 
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    static { BUILDER.push("visibility"); }
+    static { BUILDER.push("general"); }
 
     public static final ModConfigSpec.EnumValue<ShowMode> SHOW_MODE = BUILDER
             .comment("When health bars are shown: ALWAYS, WHEN_DAMAGED, LOOKING_AT or LOOKING_AT_OR_DAMAGED")
@@ -45,33 +46,40 @@ public final class Config {
             .comment("Draw bars on top of blocks so walls and ceilings never cut into them")
             .define("drawOnTop", true);
 
-    public static final ModConfigSpec.BooleanValue SHOW_ON_PLAYERS = BUILDER
-            .comment("Show bars on other players too")
-            .define("showOnPlayers", false);
-
-    public static final ModConfigSpec.BooleanValue SHOW_ON_PASSIVE = BUILDER
-            .comment("Show bars on passive mobs (cows, pigs, villagers, fish...)")
-            .define("showOnPassive", false);
-
-    public static final ModConfigSpec.BooleanValue SHOW_ON_NEUTRAL = BUILDER
-            .comment("Show bars on neutral mobs that only fight back when provoked (wolves, iron golems, bees, polar bears...)")
-            .define("showOnNeutral", true);
-
-    public static final ModConfigSpec.BooleanValue HIDE_VANILLA_NAME_TAGS = BUILDER
-            .comment("Hide the vanilla name tag on mobs that have a Healthify bar (the bar shows the name instead)")
-            .define("hideVanillaNameTags", true);
-
-    static { BUILDER.pop(); }
-
-    static { BUILDER.push("placement"); }
+    public static final ModConfigSpec.DoubleValue SCALE = BUILDER
+            .comment("Overall size of the bar, name and text (1.0 = name tag size)")
+            .defineInRange("scale", 1.0, 0.1, 5.0);
 
     public static final ModConfigSpec.DoubleValue HEIGHT_ABOVE_MOB = BUILDER
             .comment("Gap in blocks between the top of the mob and the bottom of the bar")
             .defineInRange("heightAboveMob", 0.15, -5.0, 5.0);
 
-    public static final ModConfigSpec.DoubleValue SCALE = BUILDER
-            .comment("Overall size of the bar, name and text (1.0 = name tag size)")
-            .defineInRange("scale", 1.0, 0.1, 5.0);
+    static { BUILDER.pop(); }
+
+    static { BUILDER.push("mobs"); }
+
+    public static final ModConfigSpec.BooleanValue SHOW_ON_HOSTILE = BUILDER
+            .comment("Show bars on hostile mobs (zombies, skeletons, creepers...)")
+            .define("showOnHostile", true);
+
+    public static final ModConfigSpec.BooleanValue SHOW_ON_NEUTRAL = BUILDER
+            .comment("Show bars on neutral mobs that only fight back when provoked (wolves, iron golems, bees, polar bears...)")
+            .define("showOnNeutral", true);
+
+    public static final ModConfigSpec.BooleanValue SHOW_ON_PASSIVE = BUILDER
+            .comment("Show bars on passive mobs (cows, pigs, villagers, fish...)")
+            .define("showOnPassive", false);
+
+    public static final ModConfigSpec.BooleanValue SHOW_ON_PLAYERS = BUILDER
+            .comment("Show bars on other players")
+            .define("showOnPlayers", false);
+
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> BLACKLIST = BUILDER
+            .comment("Mobs that never get a bar or damage numbers. Each entry is one of:",
+                     "  an entity id, e.g. \"minecraft:bat\"",
+                     "  every mob from a mod, e.g. \"alexsmobs:*\"",
+                     "  an entity type tag, e.g. \"#minecraft:raiders\"")
+            .defineListAllowEmpty("blacklist", List.of(), () -> "minecraft:bat", Config::isEntityPattern);
 
     static { BUILDER.pop(); }
 
@@ -119,6 +127,10 @@ public final class Config {
             .comment("Name Y offset")
             .defineInRange("nameY", 0, -500, 500);
 
+    public static final ModConfigSpec.BooleanValue HIDE_VANILLA_NAME_TAGS = BUILDER
+            .comment("Hide the vanilla name tag on mobs that have a Healthify bar (the bar shows the name instead)")
+            .define("hideVanillaNameTags", true);
+
     static { BUILDER.pop(); }
 
     static { BUILDER.push("healthText"); }
@@ -148,11 +160,11 @@ public final class Config {
     static { BUILDER.push("level"); }
 
     public static final ModConfigSpec.BooleanValue SHOW_LEVEL = BUILDER
-            .comment("Show the mob's level from Dynamic Difficulty (does nothing if that mod isn't installed)")
+            .comment("Show mob levels. Levels come from a supported mod (see Mod Support), nothing shows without one.")
             .define("showLevel", true);
 
     public static final ModConfigSpec.EnumValue<LevelPosition> LEVEL_POSITION = BUILDER
-            .comment("Where the level goes: AFTER_NAME, BEFORE_NAME, ABOVE_NAME, LEFT_OF_BAR, RIGHT_OF_BAR, INSIDE_BAR_LEFT, INSIDE_BAR_RIGHT")
+            .comment("Where the level goes: BEFORE_NAME, AFTER_NAME, ABOVE_NAME, LEFT_OF_BAR, RIGHT_OF_BAR, INSIDE_BAR_LEFT, INSIDE_BAR_RIGHT")
             .defineEnum("levelPosition", LevelPosition.BEFORE_NAME);
 
     public static final ModConfigSpec.IntValue LEVEL_X = BUILDER
@@ -168,7 +180,7 @@ public final class Config {
             .define("levelFormat", "Lv. %s");
 
     public static final ModConfigSpec.EnumValue<LevelColor> LEVEL_COLOR_MODE = BUILDER
-            .comment("DIFFICULTY = green/yellow/red like Dynamic Difficulty, CUSTOM = levelCustomColor")
+            .comment("DIFFICULTY = the colour the level mod uses, CUSTOM = levelCustomColor")
             .defineEnum("levelColorMode", LevelColor.DIFFICULTY);
 
     public static final ModConfigSpec.ConfigValue<String> LEVEL_CUSTOM_COLOR = color("levelCustomColor", "#FFD700", "Level colour when levelColorMode is CUSTOM");
@@ -203,10 +215,56 @@ public final class Config {
 
     static { BUILDER.pop(); }
 
+    static { BUILDER.push("modSupport"); }
+
+    static { BUILDER.push("dynamicDifficulty"); }
+
+    public static final ModConfigSpec.BooleanValue SHOW_DD_LEVEL = BUILDER
+            .comment("Show Dynamic Difficulty levels (does nothing if that mod isn't installed)")
+            .translation("healthify.configuration.dynamicDifficulty.showLevel")
+            .define("showLevel", true);
+
+    static { BUILDER.pop(); }
+
+    static { BUILDER.push("l2Hostility"); }
+
+    public static final ModConfigSpec.BooleanValue SHOW_L2_LEVEL = BUILDER
+            .comment("Show L2 Hostility levels when Dynamic Difficulty doesn't give one (does nothing if L2 Hostility isn't installed)")
+            .translation("healthify.configuration.l2Hostility.showLevel")
+            .define("showLevel", true);
+
+    public static final ModConfigSpec.BooleanValue SHOW_L2_TRAITS = BUILDER
+            .comment("Show the mob's traits under the bar")
+            .define("showTraits", true);
+
+    public static final ModConfigSpec.BooleanValue L2_TRAIT_ICONS = BUILDER
+            .comment("Show traits as icons; off shows their names instead")
+            .define("traitIcons", true);
+
+    public static final ModConfigSpec.IntValue L2_TRAIT_ICON_SIZE = BUILDER
+            .comment("Size of the trait icons in bar pixels")
+            .defineInRange("traitIconSize", 8, 4, 24);
+
+    public static final ModConfigSpec.BooleanValue HIDE_L2_OVERHEAD = BUILDER
+            .comment("Turn off L2 Hostility's own level and trait text above mobs, so it isn't shown twice")
+            .define("hideOwnOverheadText", true);
+
+    static { BUILDER.pop(); }
+
+    static { BUILDER.pop(); }
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private static ModConfigSpec.ConfigValue<String> color(String key, String def, String comment) {
         return BUILDER.comment(comment + " (hex, e.g. " + def + ")").define(key, def, Config::isColor);
+    }
+
+    private static boolean isEntityPattern(Object value) {
+        if (!(value instanceof String s)) return false;
+        String id = s.trim();
+        if (id.startsWith("#")) id = id.substring(1);
+        else if (id.endsWith(":*")) return id.length() > 2 && id.indexOf(':') == id.length() - 2;
+        return id.matches("([a-z0-9_.\\-]+:)?[a-z0-9_./\\-]+");
     }
 
     private static boolean isColor(Object value) {

@@ -3,9 +3,11 @@ package com.ak.healthify.client;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public final class DrawList {
-    public record Quad(float x0, float y0, float x1, float y1, int color) {}
+    public record Quad(float x0, float y0, float x1, float y1, int color,
+                       ResourceLocation texture, float u0, float v0, float u1, float v1) {}
 
     public record Text(Component text, float x, float y, int color, float originX, float originY, float scale) {}
 
@@ -14,7 +16,11 @@ public final class DrawList {
     public final List<Text> texts = new ArrayList<>();
 
     public void quad(float x0, float y0, float x1, float y1, int color) {
-        quads.add(new Quad(x0, y0, x1, y1, color));
+        quads.add(new Quad(x0, y0, x1, y1, color, null, 0.5F, 0.5F, 0.5F, 0.5F));
+    }
+
+    public void image(ResourceLocation texture, float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1) {
+        quads.add(new Quad(x0, y0, x1, y1, 0xFFFFFFFF, texture, u0, v0, u1, v1));
     }
 
     public void text(Component text, float x, float y, int color, boolean shadow) {

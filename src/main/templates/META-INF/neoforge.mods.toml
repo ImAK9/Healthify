@@ -19,7 +19,7 @@ A Minecraft mod about health.
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
-    versionRange="[${neo_version_min},)"
+    versionRange="[${neo_version},)"
     ordering="NONE"
     side="BOTH"
 
@@ -32,6 +32,13 @@ A Minecraft mod about health.
 
 [[dependencies.${mod_id}]]
     modId="dynamic_difficulty"
+    type="optional"
+    versionRange="*"
+    ordering="AFTER"
+    side="CLIENT"
+
+[[dependencies.${mod_id}]]
+    modId="l2hostility"
     type="optional"
     versionRange="*"
     ordering="AFTER"

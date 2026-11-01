@@ -60,6 +60,7 @@ public final class DamageNumbers {
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (!(entity instanceof LivingEntity living) || living == mc.player || living instanceof ArmorStand) continue;
             if (living instanceof Player && !Config.SHOW_ON_PLAYERS.get()) continue;
+            if (BarVisibility.isBlacklisted(living)) continue;
             if (living.distanceToSqr(eye) > maxDistance * maxDistance) continue;
 
             float health = living.getHealth();

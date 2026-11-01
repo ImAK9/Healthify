@@ -12,7 +12,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -79,14 +82,14 @@ public final class LegacyRenderer {
             if (onTop) {
                 RenderSystem.disableDepthTest();
             }
-            RenderType barType = onTop ? RenderType.textSeeThrough(WHITE_TEXTURE) : RenderType.textPolygonOffset(WHITE_TEXTURE);
+            Function<ResourceLocation, RenderType> barType = onTop ? RenderType::textSeeThrough : RenderType::textPolygonOffset;
             Font.DisplayMode textMode = onTop ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET;
             for (Placed bar : bars) {
                 draw(bar, camera, orientation, barType, textMode);
             }
 
             RenderSystem.disableDepthTest();
-            RenderType numberType = RenderType.textSeeThrough(WHITE_TEXTURE);
+            Function<ResourceLocation, RenderType> numberType = RenderType::textSeeThrough;
             for (Placed number : numbers) {
                 draw(number, camera, orientation, numberType, Font.DisplayMode.SEE_THROUGH);
             }
@@ -101,7 +104,7 @@ public final class LegacyRenderer {
         }
     }
 
-    private static void draw(Placed placed, Vec3 camera, Quaternionf orientation, RenderType barType, Font.DisplayMode textMode) {
+    private static void draw(Placed placed, Vec3 camera, Quaternionf orientation, Function<ResourceLocation, RenderType> barType, Font.DisplayMode textMode) {
         Font font = Minecraft.getInstance().font;
         PoseStack pose = new PoseStack();
         pose.translate(placed.x() - camera.x, placed.y() - camera.y, placed.z() - camera.z);
@@ -112,9 +115,17 @@ public final class LegacyRenderer {
         DrawList draw = placed.draw();
 
         if (!draw.quads.isEmpty()) {
-            VertexConsumer consumer = BUFFERS.getBuffer(barType);
+            Map<ResourceLocation, List<DrawList.Quad>> byTexture = new LinkedHashMap<>();
             for (DrawList.Quad quad : draw.quads) {
-                quad(consumer, pose.last(), quad);
+                ResourceLocation texture = quad.texture() == null ? WHITE_TEXTURE : quad.texture();
+                byTexture.computeIfAbsent(texture, k -> new java.util.ArrayList<>()).add(quad);
+            }
+            for (Map.Entry<ResourceLocation, List<DrawList.Quad>> group : byTexture.entrySet()) {
+                VertexConsumer consumer = BUFFERS.getBuffer(barType.apply(group.getKey()));
+                for (DrawList.Quad quad : group.getValue()) {
+                    quad(consumer, pose.last(), quad);
+                }
+                BUFFERS.endBatch();
             }
         }
         for (DrawList.Text text : draw.underlays) {
@@ -136,19 +147,19 @@ public final class LegacyRenderer {
     }
 
     private static void quad(VertexConsumer vc, PoseStack.Pose pose, DrawList.Quad q) {
-        vertex(vc, pose, q.x0(), q.y1(), q.color());
-        vertex(vc, pose, q.x1(), q.y1(), q.color());
-        vertex(vc, pose, q.x1(), q.y0(), q.color());
-        vertex(vc, pose, q.x0(), q.y0(), q.color());
+        vertex(vc, pose, q.x0(), q.y1(), q.color(), q.u0(), q.v1());
+        vertex(vc, pose, q.x1(), q.y1(), q.color(), q.u1(), q.v1());
+        vertex(vc, pose, q.x1(), q.y0(), q.color(), q.u1(), q.v0());
+        vertex(vc, pose, q.x0(), q.y0(), q.color(), q.u0(), q.v0());
 
-        vertex(vc, pose, q.x0(), q.y0(), q.color());
-        vertex(vc, pose, q.x1(), q.y0(), q.color());
-        vertex(vc, pose, q.x1(), q.y1(), q.color());
-        vertex(vc, pose, q.x0(), q.y1(), q.color());
+        vertex(vc, pose, q.x0(), q.y0(), q.color(), q.u0(), q.v0());
+        vertex(vc, pose, q.x1(), q.y0(), q.color(), q.u1(), q.v0());
+        vertex(vc, pose, q.x1(), q.y1(), q.color(), q.u1(), q.v1());
+        vertex(vc, pose, q.x0(), q.y1(), q.color(), q.u0(), q.v1());
     }
 
-    private static void vertex(VertexConsumer vc, PoseStack.Pose pose, float x, float y, int color) {
-        vc.addVertex(pose, x, y, 0.0F).setColor(color).setUv(0.5F, 0.5F).setLight(LIGHT);
+    private static void vertex(VertexConsumer vc, PoseStack.Pose pose, float x, float y, int color, float u, float v) {
+        vc.addVertex(pose, x, y, 0.0F).setColor(color).setUv(u, v).setLight(LIGHT);
     }
 }
 //?}

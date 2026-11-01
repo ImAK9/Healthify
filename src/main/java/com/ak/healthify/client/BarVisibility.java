@@ -2,11 +2,19 @@ package com.ak.healthify.client;
 
 import com.ak.healthify.Config;
 import com.ak.healthify.Healthify;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -31,6 +39,11 @@ public final class BarVisibility {
     private static final Map<Integer, Boolean> LINE_OF_SIGHT = new HashMap<>();
     private static long lineOfSightTick = Long.MIN_VALUE;
 
+    private static List<? extends String> blacklistSource;
+    private static Set<ResourceLocation> blacklistIds = Set.of();
+    private static Set<String> blacklistMods = Set.of();
+    private static List<TagKey<EntityType<?>>> blacklistTags = List.of();
+
     private BarVisibility() {}
 
     public static boolean shouldShowBar(Entity entity) {
@@ -40,6 +53,7 @@ public final class BarVisibility {
         if (!(entity instanceof LivingEntity living)) return false;
         if (living == mc.getCameraEntity() || living instanceof ArmorStand) return false;
         if (living instanceof Player && !Config.SHOW_ON_PLAYERS.get()) return false;
+        if (isBlacklisted(living)) return false;
         if (!(living instanceof Player) && !mobTypeAllowed(living)) return false;
         if (!living.isAlive()) return false;
 
@@ -70,9 +84,44 @@ public final class BarVisibility {
     }
 
     public static boolean mobTypeAllowed(LivingEntity entity) {
-        if (entity instanceof Enemy) return true;
+        if (entity instanceof Enemy) return Config.SHOW_ON_HOSTILE.get();
         if (entity instanceof NeutralMob) return Config.SHOW_ON_NEUTRAL.get();
         return Config.SHOW_ON_PASSIVE.get();
+    }
+
+    public static boolean isBlacklisted(Entity entity) {
+        List<? extends String> list = Config.BLACKLIST.get();
+        if (list.isEmpty()) return false;
+        if (list != blacklistSource) readBlacklist(list);
+        EntityType<?> type = entity.getType();
+        ResourceLocation id = EntityType.getKey(type);
+        if (blacklistIds.contains(id) || blacklistMods.contains(id.getNamespace())) return true;
+        for (TagKey<EntityType<?>> tag : blacklistTags) {
+            if (type.builtInRegistryHolder().is(tag)) return true;
+        }
+        return false;
+    }
+
+    private static void readBlacklist(List<? extends String> list) {
+        Set<ResourceLocation> ids = new HashSet<>();
+        Set<String> mods = new HashSet<>();
+        List<TagKey<EntityType<?>>> tags = new ArrayList<>();
+        for (String entry : list) {
+            String s = entry.trim();
+            if (s.startsWith("#")) {
+                ResourceLocation tag = ResourceLocation.tryParse(s.substring(1));
+                if (tag != null) tags.add(TagKey.create(Registries.ENTITY_TYPE, tag));
+            } else if (s.endsWith(":*")) {
+                mods.add(s.substring(0, s.length() - 2));
+            } else {
+                ResourceLocation id = ResourceLocation.tryParse(s);
+                if (id != null) ids.add(id);
+            }
+        }
+        blacklistIds = ids;
+        blacklistMods = mods;
+        blacklistTags = tags;
+        blacklistSource = list;
     }
 
     private static boolean canSee(LocalPlayer player, LivingEntity entity) {

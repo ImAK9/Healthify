@@ -52,7 +52,7 @@ val generateModMetadata = tasks.register<ProcessResources>("generateModMetadata"
         "mod_version" to modVersion,
         "loader_lines" to (if (isModern) "" else "modLoader=\"javafml\"\nloaderVersion=\"[1,)\""),
         "logo_lines" to (if (sc.current.parsed >= "26.3") "iconFile=\"healthify.png\""
-                         else "logoFile=\"healthify.png\"\n# Keep the pixel art sharp in the Mods list\nlogoBlur=false"),
+                         else "logoFile=\"healthify.png\"\nlogoBlur=false"),
     )
     inputs.properties(replaceProperties)
     expand(replaceProperties)
@@ -64,6 +64,10 @@ neoForge.ideSyncTask(generateModMetadata)
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
+}
+
+tasks.named<Jar>("jar") {
+    exclude("data/healthify/function/**")
 }
 
 tasks.register<Copy>("buildAndCollect") {

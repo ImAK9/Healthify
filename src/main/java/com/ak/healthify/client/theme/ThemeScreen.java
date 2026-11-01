@@ -2,7 +2,7 @@ package com.ak.healthify.client.theme;
 
 import com.ak.healthify.Config;
 import com.ak.healthify.client.DrawList;
-import com.ak.healthify.client.DynamicDifficultyCompat;
+import com.ak.healthify.client.compat.DynamicDifficultyCompat;
 import com.ak.healthify.client.HealthBars;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -135,7 +135,7 @@ public class ThemeScreen extends Screen {
         int step = (int) ((System.currentTimeMillis() / 1500L) % PREVIEW_HEALTH.length);
         String level = null;
         int levelColor = Config.argb(Config.LEVEL_CUSTOM_COLOR);
-        if (Config.SHOW_LEVEL.get() && DynamicDifficultyCompat.isAvailable()) {
+        if (Config.SHOW_LEVEL.get() && Config.SHOW_DD_LEVEL.get() && DynamicDifficultyCompat.isAvailable()) {
             level = HealthBars.formatLevel(7);
             if (Config.LEVEL_COLOR_MODE.get() == Config.LevelColor.DIFFICULTY) {
                 levelColor = 0xFFFFFF55;
@@ -147,6 +147,7 @@ public class ThemeScreen extends Screen {
 
     private static void drawList(Canvas canvas, DrawList list) {
         for (DrawList.Quad q : list.quads) {
+            if (q.texture() != null) continue;
             canvas.fill(Math.round(q.x0()), Math.round(q.y0()), Math.round(q.x1()), Math.round(q.y1()), q.color());
         }
         for (DrawList.Text t : list.underlays) {

@@ -16,6 +16,7 @@ public final class DamageTrail {
     }
 
     private static final Map<Integer, State> TRAILS = new HashMap<>();
+    private static boolean hadWorld;
 
     private DamageTrail() {}
 
@@ -47,11 +48,11 @@ public final class DamageTrail {
         return trail.fraction;
     }
 
-    public static void cleanUp(boolean clearAll) {
-        if (clearAll) {
+    public static void cleanUp(boolean noWorld) {
+        if (noWorld && hadWorld) {
             TRAILS.clear();
-            return;
         }
+        hadWorld = !noWorld;
         long now = System.currentTimeMillis();
         TRAILS.values().removeIf(trail -> now - trail.lastSeen > 5000);
     }

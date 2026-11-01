@@ -1,6 +1,8 @@
 package com.ak.healthify.client;
 
 import com.ak.healthify.Config;
+import com.ak.healthify.client.compat.DynamicDifficultyCompat;
+import com.ak.healthify.client.compat.L2HostilityCompat;
 import com.ak.healthify.client.theme.Theme;
 import com.ak.healthify.client.theme.Themes;
 import java.util.ArrayList;
@@ -18,9 +20,9 @@ public final class HealthBars {
     private static final int TEXT_HEIGHT = 7;
 
     public record BarInfo(Component name, float health, float maxHealth, String levelText, int levelColor, int trailKey,
-                          Component prefix, Component header, Component subtitle) {
+                          Component prefix, Component header, Component subtitle, List<L2HostilityCompat.Trait> traits) {
         public BarInfo(Component name, float health, float maxHealth, String levelText, int levelColor, int trailKey) {
-            this(name, health, maxHealth, levelText, levelColor, trailKey, null, null, null);
+            this(name, health, maxHealth, levelText, levelColor, trailKey, null, null, null, List.of());
         }
     }
 
@@ -53,18 +55,23 @@ public final class HealthBars {
     }
 
     private static BarInfo infoFor(LivingEntity entity) {
-        boolean weShowLevels = Config.SHOW_LEVEL.get() && DynamicDifficultyCompat.isAvailable();
+        boolean weShowLevels = Config.SHOW_LEVEL.get() && Config.SHOW_DD_LEVEL.get() && DynamicDifficultyCompat.isAvailable();
         int level = weShowLevels ? DynamicDifficultyCompat.getLevel(entity) : -1;
         String levelText = level >= 0 ? formatLevel(level) : null;
         int levelColor = Config.argb(Config.LEVEL_CUSTOM_COLOR);
         if (levelText != null && Config.LEVEL_COLOR_MODE.get() == Config.LevelColor.DIFFICULTY) {
             levelColor = DynamicDifficultyCompat.getLevelColor(Minecraft.getInstance().player, entity, levelColor);
         }
+        L2HostilityCompat.Info l2 = L2HostilityCompat.forBar(entity);
+        if (levelText == null && l2.level() > 0) {
+            levelText = formatLevel(l2.level());
+            levelColor = l2.levelColor();
+        }
         Component name = NameTags.nameFor(entity, weShowLevels);
         com.ak.healthify.api.HealthifyApi.Decoration extra = com.ak.healthify.api.HealthifyApi.decorate(entity);
         if (extra.name() != null && name.equals(entity.getDisplayName())) name = extra.name();
         return new BarInfo(name, Math.max(0.0F, entity.getHealth()), Math.max(1.0F, entity.getMaxHealth()),
-                levelText, levelColor, entity.getId(), extra.prefix(), extra.header(), extra.subtitle());
+                levelText, levelColor, entity.getId(), extra.prefix(), extra.header(), extra.subtitle(), l2.traits());
     }
 
     public static DrawList layout(BarInfo info, Theme theme, Font font) {
@@ -150,9 +157,23 @@ public final class HealthBars {
             out.scaledText(info.header(), -font.width(info.header()) / 2.0F, -TEXT_HEIGHT - 1, theme.nameColor(),
                     nameOffsetX, headerBottom, SUBTITLE_SCALE, shadow);
         }
+        if (!info.traits().isEmpty()) {
+            boolean levelAbove = levelText != null && levelPos == Config.LevelPosition.ABOVE_NAME;
+            boolean levelBesideBar = levelPos == Config.LevelPosition.LEFT_OF_BAR || levelPos == Config.LevelPosition.RIGHT_OF_BAR
+                    || levelPos == Config.LevelPosition.INSIDE_BAR_LEFT || levelPos == Config.LevelPosition.INSIDE_BAR_RIGHT;
+            boolean nameLine = showName || (levelText != null && !levelBesideBar);
+            float stackTop = nameLine ? nameLineY + nameOffsetY : defaultTop + Config.BAR_Y.get();
+            if (levelAbove) stackTop = Math.min(stackTop, nameLineY - font.lineHeight + Config.LEVEL_Y.get());
+            if (info.header() != null) {
+                float headerBottom = nameLineY + nameOffsetY - 2 - (levelAbove ? font.lineHeight : 0);
+                stackTop = Math.min(stackTop, headerBottom - (TEXT_HEIGHT + 1) * SUBTITLE_SCALE);
+            }
+            L2HostilityCompat.drawTraits(out, info.traits(), font, Config.BAR_X.get(), stackTop - 3.0F, theme, shadow);
+        }
+        float belowBar = 2.0F + Config.BAR_Y.get();
         if (info.subtitle() != null) {
             out.scaledText(info.subtitle(), -font.width(info.subtitle()) / 2.0F, 0.0F, theme.nameColor(),
-                    Config.BAR_X.get(), 2.0F + Config.BAR_Y.get(), SUBTITLE_SCALE, shadow);
+                    Config.BAR_X.get(), belowBar, SUBTITLE_SCALE, shadow);
         }
         return out;
     }
