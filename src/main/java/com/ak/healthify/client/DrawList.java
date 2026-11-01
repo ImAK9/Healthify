@@ -23,13 +23,22 @@ public final class DrawList {
 
     public void scaledText(Component text, float x, float y, int color, float originX, float originY, float scale, boolean shadow) {
         if (shadow) {
-            underlays.add(new Text(Component.literal(text.getString()), x + 1, y + 1, shadowColor(color), originX, originY, scale));
+            underlays.add(new Text(shadowOf(text), x + 1, y + 1, shadowColor(color), originX, originY, scale));
         }
         texts.add(new Text(text, x, y, color, originX, originY, scale));
     }
 
     public void underlay(Component text, float x, float y, int color, float originX, float originY, float scale) {
         underlays.add(new Text(text, x, y, color, originX, originY, scale));
+    }
+
+    private static Component shadowOf(Component text) {
+        net.minecraft.network.chat.MutableComponent out = Component.empty();
+        text.visit((style, string) -> {
+            out.append(Component.literal(string).withStyle(style.withColor((net.minecraft.network.chat.TextColor) null)));
+            return java.util.Optional.empty();
+        }, net.minecraft.network.chat.Style.EMPTY);
+        return out;
     }
 
     public static int shadowColor(int argb) {

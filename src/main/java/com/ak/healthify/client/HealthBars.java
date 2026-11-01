@@ -17,7 +17,14 @@ public final class HealthBars {
     private static final float BASE_SCALE = 0.025F;
     private static final int TEXT_HEIGHT = 7;
 
-    public record BarInfo(Component name, float health, float maxHealth, String levelText, int levelColor, int trailKey) {}
+    public record BarInfo(Component name, float health, float maxHealth, String levelText, int levelColor, int trailKey,
+                          Component prefix, Component header, Component subtitle) {
+        public BarInfo(Component name, float health, float maxHealth, String levelText, int levelColor, int trailKey) {
+            this(name, health, maxHealth, levelText, levelColor, trailKey, null, null, null);
+        }
+    }
+
+    private static final float SUBTITLE_SCALE = 0.75F;
 
     private HealthBars() {}
 
@@ -54,8 +61,10 @@ public final class HealthBars {
             levelColor = DynamicDifficultyCompat.getLevelColor(Minecraft.getInstance().player, entity, levelColor);
         }
         Component name = NameTags.nameFor(entity, weShowLevels);
+        com.ak.healthify.api.HealthifyApi.Decoration extra = com.ak.healthify.api.HealthifyApi.decorate(entity);
+        if (extra.name() != null && name.equals(entity.getDisplayName())) name = extra.name();
         return new BarInfo(name, Math.max(0.0F, entity.getHealth()), Math.max(1.0F, entity.getMaxHealth()),
-                levelText, levelColor, entity.getId());
+                levelText, levelColor, entity.getId(), extra.prefix(), extra.header(), extra.subtitle());
     }
 
     public static DrawList layout(BarInfo info, Theme theme, Font font) {
@@ -89,12 +98,14 @@ public final class HealthBars {
 
         String levelText = info.levelText();
         int levelWidth = levelText != null ? font.width(levelText) : 0;
-        Component name = info.name();
         boolean showName = Config.SHOW_NAME.get();
-        int nameWidth = showName ? font.width(name) : 0;
-
         Config.LevelPosition levelPos = Config.LEVEL_POSITION.get();
         boolean levelInline = levelPos == Config.LevelPosition.AFTER_NAME || levelPos == Config.LevelPosition.BEFORE_NAME;
+        boolean prefixFirst = info.prefix() != null && levelText != null && showName && levelPos == Config.LevelPosition.BEFORE_NAME;
+        Component name = info.prefix() == null || prefixFirst ? info.name() : info.prefix().copy().append(info.name());
+        int nameWidth = showName ? font.width(name) : 0;
+        int prefixWidth = prefixFirst ? font.width(info.prefix()) : 0;
+        float prefixX = 0;
 
         float nameX = -nameWidth / 2.0F;
         int nameOffsetX = Config.NAME_X.get();
@@ -110,8 +121,10 @@ public final class HealthBars {
                     nameX = start;
                     levelX = start + nameWidth + gap;
                 } else {
-                    levelX = start;
-                    nameX = start + levelWidth + gap;
+                    start -= prefixWidth / 2.0F;
+                    prefixX = start;
+                    levelX = start + prefixWidth;
+                    nameX = levelX + levelWidth + gap;
                 }
                 levelX += nameOffsetX;
                 levelY = nameLineY + nameOffsetY;
@@ -129,7 +142,17 @@ public final class HealthBars {
         }
 
         if (showName) {
+            if (prefixFirst) out.text(info.prefix(), prefixX + nameOffsetX, nameLineY + nameOffsetY, theme.nameColor(), shadow);
             out.text(name, nameX + nameOffsetX, nameLineY + nameOffsetY, theme.nameColor(), shadow);
+        }
+        if (info.header() != null) {
+            float headerBottom = nameLineY + nameOffsetY - 2 - (levelText != null && levelPos == Config.LevelPosition.ABOVE_NAME ? font.lineHeight : 0);
+            out.scaledText(info.header(), -font.width(info.header()) / 2.0F, -TEXT_HEIGHT - 1, theme.nameColor(),
+                    nameOffsetX, headerBottom, SUBTITLE_SCALE, shadow);
+        }
+        if (info.subtitle() != null) {
+            out.scaledText(info.subtitle(), -font.width(info.subtitle()) / 2.0F, 0.0F, theme.nameColor(),
+                    Config.BAR_X.get(), 2.0F + Config.BAR_Y.get(), SUBTITLE_SCALE, shadow);
         }
         return out;
     }

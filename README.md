@@ -53,6 +53,24 @@ With **[Dynamic Difficulty](https://www.curseforge.com/minecraft/mc-mods/dynamic
 
 ![Dynamic Difficulty levels](https://i.imgur.com/2CwH6Hb.png)
 
+## For mod developers
+
+Other mods can add to a mob's health bar: a symbol before its name and a small line under the bar. The API only uses
+Java and Minecraft types, so you can call it by reflection without depending on Healthify:
+
+```java
+Class.forName("com.ak.healthify.api.HealthifyApi")
+        .getMethod("addDecorator", java.util.function.Function.class)
+        .invoke(null, (java.util.function.Function<LivingEntity, Map<String, Object>>) entity ->
+                isElite(entity) ? Map.of("prefix", Component.literal("★ ").withStyle(ChatFormatting.GOLD),
+                                         "subtitle", Component.literal("Vampiric · Swift").withStyle(ChatFormatting.GOLD))
+                                : null);
+```
+
+Return `null` for nothing, or a map with any of `"name"` (shown instead of the mob's name), `"prefix"` (starts the
+name line, before the level when it's shown first), `"header"` (a small line above the name) and `"subtitle"` (a small line under the bar), all `Component`s. It's called every frame
+on the client for each mob with a bar, so keep it cheap.
+
 ## Compatibility
 
 |            |                                   |
