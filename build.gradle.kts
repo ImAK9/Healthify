@@ -45,6 +45,7 @@ val generateModMetadata = tasks.register<ProcessResources>("generateModMetadata"
         "minecraft_version" to mcVersion,
         "minecraft_version_range" to sc.properties.get<String>("mod.mc_range"),
         "neo_version" to sc.properties.get<String>("deps.neoforge"),
+        "neo_version_min" to sc.properties.get<String>("deps.neoforge_min"),
         "mod_id" to modId,
         "mod_name" to sc.properties.get<String>("mod.name"),
         "mod_license" to sc.properties.get<String>("mod.license"),

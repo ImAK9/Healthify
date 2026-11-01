@@ -19,7 +19,7 @@ A Minecraft mod about health.
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
-    versionRange="[${neo_version},)"
+    versionRange="[${neo_version_min},)"
     ordering="NONE"
     side="BOTH"
 
