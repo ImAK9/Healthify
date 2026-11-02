@@ -38,6 +38,7 @@ public final class HealthBars {
         Theme theme = Themes.current();
         float scale = BASE_SCALE * Config.SCALE.get().floatValue();
         float heightAbove = Config.HEIGHT_ABOVE_MOB.get().floatValue();
+        double keepSizeBeyond = Config.KEEP_SIZE_BEYOND.get();
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (!(entity instanceof LivingEntity living) || !BarVisibility.shouldShowBar(living)) continue;
 
@@ -48,7 +49,12 @@ public final class HealthBars {
             double dx = x - camera.x;
             double dy = y - camera.y;
             double dz = z - camera.z;
-            bars.add(new Placed(x, y, z, 0.0F, scale, layout(infoFor(living), theme, mc.font), dx * dx + dy * dy + dz * dz));
+            double distanceSq = dx * dx + dy * dy + dz * dz;
+            float barScale = scale;
+            if (keepSizeBeyond > 0.0 && distanceSq > keepSizeBeyond * keepSizeBeyond) {
+                barScale = (float) (scale * Math.sqrt(distanceSq) / keepSizeBeyond);
+            }
+            bars.add(new Placed(x, y, z, 0.0F, barScale, layout(infoFor(living), theme, mc.font), distanceSq));
         }
         bars.sort((a, b) -> Double.compare(b.distanceSq(), a.distanceSq()));
         return bars;

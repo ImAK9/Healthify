@@ -1,7 +1,7 @@
 mod.id = "healthify"
 mod.name = "Healthify"
 mod.group = "com.ak.healthify"
-mod.version = "1.1.0"
+mod.version = "1.1.1"
 mod.license = "MIT"
 mod.description = "RPG-style health bars and floating damage numbers."
 publish.curseforge_id = "1775831"

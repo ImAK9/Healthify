@@ -50,6 +50,10 @@ public final class Config {
             .comment("Overall size of the bar, name and text (1.0 = name tag size)")
             .defineInRange("scale", 1.0, 0.1, 5.0);
 
+    public static final ConfigSpec.DoubleValue KEEP_SIZE_BEYOND = BUILDER
+            .comment("Bars stop shrinking past this many blocks, so far-away bars stay readable (0 = off, bars shrink with distance like normal)")
+            .defineInRange("keepSizeBeyond", 0.0, 0.0, 256.0);
+
     public static final ConfigSpec.DoubleValue HEIGHT_ABOVE_MOB = BUILDER
             .comment("Gap in blocks between the top of the mob and the bottom of the bar")
             .defineInRange("heightAboveMob", 0.15, -5.0, 5.0);

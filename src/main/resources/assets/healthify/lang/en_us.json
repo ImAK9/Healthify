@@ -86,5 +86,6 @@
   "healthify.themes.hint": "Make your own: copy a theme file in the themes folder and edit it",
   "healthify.themes.open_folder": "Open Themes Folder",
   "healthify.themes.errors": "%s theme file(s) have errors: see the game log",
-  "healthify.settings.title": "Healthify Settings"
+  "healthify.settings.title": "Healthify Settings",
+  "healthify.configuration.keepSizeBeyond": "Stop Shrinking Beyond (blocks)"
 }
