@@ -98,7 +98,9 @@ publishMods {
     file.set(tasks.named<Jar>("jar").flatMap { it.archiveFile })
     displayName.set("[NeoForge] $modVersion - $mcVersion")
     version.set("$modVersion+$mcVersion-neoforge")
-    changelog.set(providers.fileContents(rootProject.layout.projectDirectory.file("CHANGELOG.md")).asText)
+    changelog.set(providers.fileContents(rootProject.layout.projectDirectory.file("CHANGELOG.md")).asText.map {
+        it.replace("\r\n", "\n").split(Regex("(?m)^(?=## )")).firstOrNull { part -> part.isNotBlank() }?.trim() ?: it
+    })
     type.set(STABLE)
     modLoaders.add("neoforge")
     dryRun.set(token.map { it.isBlank() }.orElse(true))
