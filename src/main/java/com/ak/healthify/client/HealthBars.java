@@ -1,6 +1,7 @@
 package com.ak.healthify.client;
 
 import com.ak.healthify.Config;
+import com.ak.healthify.client.compat.ChampionsCompat;
 import com.ak.healthify.client.compat.DynamicDifficultyCompat;
 import com.ak.healthify.client.compat.L2HostilityCompat;
 import com.ak.healthify.client.theme.Theme;
@@ -20,9 +21,10 @@ public final class HealthBars {
     private static final int TEXT_HEIGHT = 7;
 
     public record BarInfo(Component name, float health, float maxHealth, String levelText, int levelColor, int trailKey,
-                          Component prefix, Component header, Component subtitle, List<L2HostilityCompat.Trait> traits) {
+                          Component prefix, Component header, Component subtitle, List<L2HostilityCompat.Trait> traits,
+                          int stars, int starColor) {
         public BarInfo(Component name, float health, float maxHealth, String levelText, int levelColor, int trailKey) {
-            this(name, health, maxHealth, levelText, levelColor, trailKey, null, null, null, List.of());
+            this(name, health, maxHealth, levelText, levelColor, trailKey, null, null, null, List.of(), 0, 0);
         }
     }
 
@@ -76,8 +78,12 @@ public final class HealthBars {
         Component name = NameTags.nameFor(entity, weShowLevels);
         com.ak.healthify.api.HealthifyApi.Decoration extra = com.ak.healthify.api.HealthifyApi.decorate(entity);
         if (extra.name() != null && name.equals(entity.getDisplayName())) name = extra.name();
+        ChampionsCompat.Info champion = ChampionsCompat.forBar(entity);
+        name = ChampionsCompat.decorateName(name, champion);
+        Component header = extra.header() != null ? extra.header() : champion.affixes();
         return new BarInfo(name, Math.max(0.0F, entity.getHealth()), Math.max(1.0F, entity.getMaxHealth()),
-                levelText, levelColor, entity.getId(), extra.prefix(), extra.header(), extra.subtitle(), l2.traits());
+                levelText, levelColor, entity.getId(), extra.prefix(), header, extra.subtitle(), l2.traits(),
+                champion.stars(), champion.starColor());
     }
 
     public static DrawList layout(BarInfo info, Theme theme, Font font) {
@@ -163,7 +169,7 @@ public final class HealthBars {
             out.scaledText(info.header(), -font.width(info.header()) / 2.0F, -TEXT_HEIGHT - 1, theme.nameColor(),
                     nameOffsetX, headerBottom, SUBTITLE_SCALE, shadow);
         }
-        if (!info.traits().isEmpty()) {
+        if (!info.traits().isEmpty() || info.stars() > 0) {
             boolean levelAbove = levelText != null && levelPos == Config.LevelPosition.ABOVE_NAME;
             boolean levelBesideBar = levelPos == Config.LevelPosition.LEFT_OF_BAR || levelPos == Config.LevelPosition.RIGHT_OF_BAR
                     || levelPos == Config.LevelPosition.INSIDE_BAR_LEFT || levelPos == Config.LevelPosition.INSIDE_BAR_RIGHT;
@@ -174,7 +180,11 @@ public final class HealthBars {
                 float headerBottom = nameLineY + nameOffsetY - 2 - (levelAbove ? font.lineHeight : 0);
                 stackTop = Math.min(stackTop, headerBottom - (TEXT_HEIGHT + 1) * SUBTITLE_SCALE);
             }
-            L2HostilityCompat.drawTraits(out, info.traits(), font, Config.BAR_X.get(), stackTop - 3.0F, theme, shadow);
+            float rowBottom = stackTop - 3.0F;
+            if (info.stars() > 0) {
+                rowBottom = ChampionsCompat.drawStars(out, info.stars(), info.starColor(), font, Config.BAR_X.get(), rowBottom, shadow) - 2.0F;
+            }
+            L2HostilityCompat.drawTraits(out, info.traits(), font, Config.BAR_X.get(), rowBottom, theme, shadow);
         }
         float belowBar = 2.0F + Config.BAR_Y.get();
         if (info.subtitle() != null) {

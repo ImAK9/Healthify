@@ -43,3 +43,10 @@ A Minecraft mod about health.
     versionRange="*"
     ordering="AFTER"
     side="CLIENT"
+
+[[dependencies.${mod_id}]]
+    modId="champions"
+    type="optional"
+    versionRange="*"
+    ordering="AFTER"
+    side="CLIENT"

@@ -2,7 +2,12 @@ package com.ak.healthify.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 
 public final class DrawList {
@@ -20,7 +25,11 @@ public final class DrawList {
     }
 
     public void image(ResourceLocation texture, float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1) {
-        quads.add(new Quad(x0, y0, x1, y1, 0xFFFFFFFF, texture, u0, v0, u1, v1));
+        image(texture, x0, y0, x1, y1, u0, v0, u1, v1, 0xFFFFFFFF);
+    }
+
+    public void image(ResourceLocation texture, float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, int color) {
+        quads.add(new Quad(x0, y0, x1, y1, color, texture, u0, v0, u1, v1));
     }
 
     public void text(Component text, float x, float y, int color, boolean shadow) {
@@ -39,12 +48,33 @@ public final class DrawList {
     }
 
     private static Component shadowOf(Component text) {
-        net.minecraft.network.chat.MutableComponent out = Component.empty();
+        MutableComponent out = Component.empty();
         text.visit((style, string) -> {
-            out.append(Component.literal(string).withStyle(style.withColor((net.minecraft.network.chat.TextColor) null)));
-            return java.util.Optional.empty();
-        }, net.minecraft.network.chat.Style.EMPTY);
+            Style current = style.withColor((TextColor) null);
+            StringBuilder run = new StringBuilder();
+            for (int i = 0; i < string.length(); i++) {
+                char ch = string.charAt(i);
+                if (ch == '\u00a7' && i + 1 < string.length()) {
+                    ChatFormatting format = ChatFormatting.getByCode(string.charAt(i + 1));
+                    if (format != null) {
+                        flush(out, run, current);
+                        current = (format == ChatFormatting.RESET ? style : current.applyLegacyFormat(format)).withColor((TextColor) null);
+                        i++;
+                        continue;
+                    }
+                }
+                run.append(ch);
+            }
+            flush(out, run, current);
+            return Optional.empty();
+        }, Style.EMPTY);
         return out;
+    }
+
+    private static void flush(MutableComponent out, StringBuilder run, Style style) {
+        if (run.length() == 0) return;
+        out.append(Component.literal(run.toString()).withStyle(style));
+        run.setLength(0);
     }
 
     public static int shadowColor(int argb) {

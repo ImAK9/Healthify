@@ -1,6 +1,7 @@
 package com.ak.healthify.client.theme;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 final class BuiltinThemes {
@@ -10,8 +11,39 @@ final class BuiltinThemes {
 
     static final Map<String, String> FILES = new LinkedHashMap<>();
 
+    static final Map<String, List<String>> PREVIOUS = new LinkedHashMap<>();
+
     static {
         FILES.put("healthify", """
+                {
+                  "name": "Healthify",
+                  "author": "Healthify",
+                  "bar": {
+                    "height": 10,
+                    "ends": "pointed",
+                    "shading": true,
+                    "fill": "#A3170B",
+                    "empty": "#3A0B07",
+                    "frame": "#7A7A7A",
+                    "outline": "#1B1B1B",
+                    "inner": "#2E2E2E",
+                    "damageTrail": "#E8B23A"
+                  },
+                  "text": {
+                    "name": "#FFFFFF",
+                    "health": "#FFFFFF",
+                    "shadow": true
+                  },
+                  "damageNumbers": {
+                    "damage": "#F2E2C2",
+                    "bigHit": "#F2B56B",
+                    "kill": "#D6453D",
+                    "heal": "#A8E08F",
+                    "outline": "#2E1C10"
+                  }
+                }
+                """);
+        PREVIOUS.put("healthify", List.of("""
                 {
                   "name": "Healthify",
                   "author": "Healthify",
@@ -38,7 +70,8 @@ final class BuiltinThemes {
                     "heal": "#5CFF5C"
                   }
                 }
-                """);
+                """, FILES.get("healthify").replace("#D6453D", "#E87A5F")));
+
         FILES.put("classic", """
                 {
                   "name": "Classic",
@@ -173,10 +206,13 @@ final class BuiltinThemes {
                 "shadow": true                 Drop shadow behind the text
               },
               "damageNumbers": {
-                "damage": "#FFE14D",           Normal hits
-                "bigHit": "#FF8A1F",           Big hits
-                "kill": "#FF3B30",             Killing blows
-                "heal": "#5CFF5C"              Healing
+                "damage": "#F2E2C2",           Normal hits
+                "bigHit": "#F2B56B",           Big hits
+                "kill": "#D6453D",             Killing blows
+                "heal": "#A8E08F",             Healing
+                "outline": "#2E1C10",          Outline colour (leave out for a darker shade of each number)
+                "bigHitWords": ["Crit!", "Boom!"],   Words shown above big hits, one picked at random
+                "killWords": ["Slain!", "K.O.!"]     Words shown above killing blows
               }
             }
 

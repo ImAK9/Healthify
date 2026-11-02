@@ -77,6 +77,13 @@
   "healthify.configuration.traitIcons": "Traits as Icons",
   "healthify.configuration.traitIconSize": "Trait Icon Size",
   "healthify.configuration.hideOwnOverheadText": "Hide L2 Hostility's Own Text",
+  "healthify.configuration.champions": "Champions",
+  "healthify.configuration.champions.title": "Champions",
+  "healthify.configuration.champions.button": "Champions",
+  "healthify.configuration.rankStyle": "Rank Style",
+  "healthify.configuration.colorName": "Rank Coloured Name",
+  "healthify.configuration.showAffixes": "Show Affixes",
+  "healthify.configuration.hideOwnHud": "Hide Champions' Own Health Bar",
   "healthify.themes.title": "Healthify Themes",
   "healthify.themes.previous": "< Previous",
   "healthify.themes.next": "Next >",
@@ -91,5 +98,9 @@
   "healthify.settings.undo.tooltip": "Reverts changes on this screen only.",
   "healthify.settings.reset": "Reset",
   "healthify.settings.reset.tooltip": "Reverts everything on this screen to its default value.",
-  "healthify.settings.hint": "Hover over a setting to see what it does."
+  "healthify.settings.hint": "Hover over a setting to see what it does.",
+  "healthify.configuration.damageNumberOutlineThickness": "Outline Thickness",
+  "healthify.configuration.damageNumberDecimals": "Decimals",
+  "healthify.configuration.exclaimBigHits": "Exclamation on Big Hits",
+  "healthify.configuration.hitWords": "Words on Big Hits"
 }

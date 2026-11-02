@@ -10,7 +10,11 @@ import com.ak.healthify.client.NameTags;
 import com.ak.healthify.client.Placed;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
@@ -39,21 +43,21 @@ public final class ModernRenderer {
         if (bars.isEmpty() && numbers.isEmpty()) return;
 
         boolean onTop = Config.DRAW_ON_TOP.get();
-        RenderType barType = onTop ? BarPipeline.onTop(WHITE_TEXTURE) : RenderTypes.textPolygonOffset(WHITE_TEXTURE);
+        Function<ResourceLocation, RenderType> barType = onTop ? BarPipeline::onTop : RenderTypes::textPolygonOffset;
         Font.DisplayMode textMode = onTop ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET;
 
         int order = FIRST_ORDER;
         for (Placed bar : bars) {
             order = submit(collector, pose, bar, camera, barType, textMode, order);
         }
-        RenderType numberType = RenderTypes.textSeeThrough(WHITE_TEXTURE);
+        Function<ResourceLocation, RenderType> numberType = RenderTypes::textSeeThrough;
         for (Placed number : numbers) {
             order = submit(collector, pose, number, camera, numberType, Font.DisplayMode.SEE_THROUGH, order);
         }
     }
 
     private static int submit(SubmitNodeCollector collector, PoseStack pose, Placed placed, CameraRenderState camera,
-                              RenderType barType, Font.DisplayMode textMode, int order) {
+                              Function<ResourceLocation, RenderType> barType, Font.DisplayMode textMode, int order) {
         DrawList draw = placed.draw();
         pose.pushPose();
         pose.translate(placed.x() - camera.pos.x, placed.y() - camera.pos.y, placed.z() - camera.pos.z);
@@ -62,12 +66,20 @@ public final class ModernRenderer {
         pose.scale(placed.scale(), -placed.scale(), placed.scale());
 
         if (!draw.quads.isEmpty()) {
-            collector.order(order).submitCustomGeometry(pose, barType, (p, consumer) -> {
-                for (DrawList.Quad quad : draw.quads) {
-                    if (quad.texture() != null) continue;
-                    quad(consumer, p, quad);
-                }
-            });
+            Map<ResourceLocation, List<DrawList.Quad>> byTexture = new LinkedHashMap<>();
+            for (DrawList.Quad quad : draw.quads) {
+                ResourceLocation texture = quad.texture() == null ? WHITE_TEXTURE : quad.texture();
+                byTexture.computeIfAbsent(texture, k -> new ArrayList<>()).add(quad);
+            }
+            OrderedSubmitNodeCollector geometry = collector.order(order);
+            for (Map.Entry<ResourceLocation, List<DrawList.Quad>> group : byTexture.entrySet()) {
+                List<DrawList.Quad> quads = group.getValue();
+                geometry.submitCustomGeometry(pose, barType.apply(group.getKey()), (p, consumer) -> {
+                    for (DrawList.Quad quad : quads) {
+                        quad(consumer, p, quad);
+                    }
+                });
+            }
         }
         OrderedSubmitNodeCollector underlays = collector.order(order + 1);
         for (DrawList.Text text : draw.underlays) {
@@ -93,19 +105,19 @@ public final class ModernRenderer {
     }
 
     private static void quad(VertexConsumer vc, PoseStack.Pose pose, DrawList.Quad q) {
-        vertex(vc, pose, q.x0(), q.y1(), q.color());
-        vertex(vc, pose, q.x1(), q.y1(), q.color());
-        vertex(vc, pose, q.x1(), q.y0(), q.color());
-        vertex(vc, pose, q.x0(), q.y0(), q.color());
+        vertex(vc, pose, q.x0(), q.y1(), q.color(), q.u0(), q.v1());
+        vertex(vc, pose, q.x1(), q.y1(), q.color(), q.u1(), q.v1());
+        vertex(vc, pose, q.x1(), q.y0(), q.color(), q.u1(), q.v0());
+        vertex(vc, pose, q.x0(), q.y0(), q.color(), q.u0(), q.v0());
 
-        vertex(vc, pose, q.x0(), q.y0(), q.color());
-        vertex(vc, pose, q.x1(), q.y0(), q.color());
-        vertex(vc, pose, q.x1(), q.y1(), q.color());
-        vertex(vc, pose, q.x0(), q.y1(), q.color());
+        vertex(vc, pose, q.x0(), q.y0(), q.color(), q.u0(), q.v0());
+        vertex(vc, pose, q.x1(), q.y0(), q.color(), q.u1(), q.v0());
+        vertex(vc, pose, q.x1(), q.y1(), q.color(), q.u1(), q.v1());
+        vertex(vc, pose, q.x0(), q.y1(), q.color(), q.u0(), q.v1());
     }
 
-    private static void vertex(VertexConsumer vc, PoseStack.Pose pose, float x, float y, int color) {
-        vc.addVertex(pose, x, y, 0.0F).setColor(color).setUv(0.5F, 0.5F).setLight(LIGHT);
+    private static void vertex(VertexConsumer vc, PoseStack.Pose pose, float x, float y, int color, float u, float v) {
+        vc.addVertex(pose, x, y, 0.0F).setColor(color).setUv(u, v).setLight(LIGHT);
     }
 }
 *///?}

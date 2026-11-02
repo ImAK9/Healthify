@@ -13,6 +13,15 @@ public final class Numbers {
         return String.format(Locale.ROOT, "%.1f", rounded);
     }
 
+    public static String format(float value, int decimals) {
+        if (decimals <= 0) return Integer.toString(Math.round(value));
+        if (decimals == 1) return format(value);
+        float scale = (float) Math.pow(10, decimals);
+        float rounded = Math.round(value * scale) / scale;
+        if (rounded == (int) rounded) return Integer.toString((int) rounded);
+        return String.format(Locale.ROOT, "%." + decimals + "f", rounded);
+    }
+
     public static float clamp(float value, float min, float max) {
         return value < min ? min : Math.min(value, max);
     }

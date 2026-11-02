@@ -1,5 +1,7 @@
 package com.ak.healthify.client.theme;
 
+import java.util.List;
+
 public record Theme(
         String id,
         String name,
@@ -21,7 +23,13 @@ public record Theme(
         int damageColor,
         int bigHitColor,
         int killColor,
-        int healColor) {
+        int healColor,
+        Integer numberOutline,
+        List<String> bigHitWords,
+        List<String> killWords) {
+    public static final List<String> DEFAULT_BIG_HIT_WORDS = List.of("Crit!", "Boom!", "Smash!", "Pow!");
+    public static final List<String> DEFAULT_KILL_WORDS = List.of("Slain!", "K.O.!", "Finished!");
+
     public static final int MIN_HEIGHT = 7;
     public static final int MAX_HEIGHT = 20;
 

@@ -15,6 +15,8 @@ public final class Config {
 
     public enum HealthFormat { CURRENT_AND_MAX, CURRENT, PERCENT }
 
+    public enum ChampionRank { STARS, NAME, BOTH, OFF }
+
     public enum LevelPosition { BEFORE_NAME, AFTER_NAME, ABOVE_NAME, LEFT_OF_BAR, RIGHT_OF_BAR, INSIDE_BAR_LEFT, INSIDE_BAR_RIGHT }
 
     public enum LevelColor {
@@ -213,6 +215,22 @@ public final class Config {
             .comment("Dark outline around the numbers")
             .define("damageNumberOutline", true);
 
+    public static final ConfigSpec.IntValue DAMAGE_NUMBER_OUTLINE_THICKNESS = BUILDER
+            .comment("Outline thickness in pixels")
+            .defineInRange("damageNumberOutlineThickness", 1, 1, 2);
+
+    public static final ConfigSpec.IntValue DAMAGE_NUMBER_DECIMALS = BUILDER
+            .comment("Decimal places on damage numbers (0 = 7, 1 = 6.6, 2 = 6.57)")
+            .defineInRange("damageNumberDecimals", 1, 0, 2);
+
+    public static final ConfigSpec.BooleanValue EXCLAIM_BIG_HITS = BUILDER
+            .comment("Add an exclamation mark to big hits and killing blows, like 12!")
+            .define("exclaimBigHits", true);
+
+    public static final ConfigSpec.BooleanValue HIT_WORDS = BUILDER
+            .comment("Show a small word above big hits and killing blows, like Crit! or Slain! (themes can set their own words)")
+            .define("hitWords", true);
+
     public static final ConfigSpec.DoubleValue BIG_HIT_THRESHOLD = BUILDER
             .comment("A hit counts as big (bigger, orange number) when it takes at least this share of the mob's max health (0.25 = 25%)")
             .defineInRange("bigHitThreshold", 0.25, 0.0, 1.0);
@@ -252,6 +270,26 @@ public final class Config {
     public static final ConfigSpec.BooleanValue HIDE_L2_OVERHEAD = BUILDER
             .comment("Turn off L2 Hostility's own level and trait text above mobs, so it isn't shown twice")
             .define("hideOwnOverheadText", true);
+
+    static { BUILDER.pop(); }
+
+    static { BUILDER.push("champions"); }
+
+    public static final ConfigSpec.EnumValue<ChampionRank> CHAMPION_RANK = BUILDER
+            .comment("How a champion's rank is shown: STARS above the name (one per tier), NAME before it (like Elite), BOTH or OFF (does nothing if Champions isn't installed)")
+            .defineEnum("rankStyle", ChampionRank.STARS);
+
+    public static final ConfigSpec.BooleanValue COLOR_CHAMPION_NAME = BUILDER
+            .comment("Colour a champion's name in its rank colour")
+            .define("colorName", true);
+
+    public static final ConfigSpec.BooleanValue SHOW_CHAMPION_AFFIXES = BUILDER
+            .comment("Show a champion's affixes above its name")
+            .define("showAffixes", true);
+
+    public static final ConfigSpec.BooleanValue HIDE_CHAMPIONS_HUD = BUILDER
+            .comment("Hide Champions' own health bar at the top of the screen, so it isn't shown twice")
+            .define("hideOwnHud", true);
 
     static { BUILDER.pop(); }
 

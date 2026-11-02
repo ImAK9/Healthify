@@ -1,3 +1,18 @@
+## 1.3.0
+
+### New
+- **Champions support** (NeoForge): champions show their rank as stars above the name (one per tier, in the rank's colour), their name in the rank's colour and their affixes listed above it. Rank Style can also show the rank name (like "Elite Zombie"), both or neither, and each part can be turned off under Mod Support.
+- **Punchier damage numbers**: big hits and killing blows get an exclamation mark and a small word above them, like "Crit!" or "Slain!" (both can be turned off, and themes can set their own words)
+- **Outline Thickness** (1 or 2 pixels) and **Decimals** (0, 1 or 2) options for damage numbers
+- Themes can set the damage number outline colour
+
+### Changed
+- Softer damage number colours in the default theme: cream hits, amber big hits, deep red kills and soft green heals, with a dark brown outline
+- Unedited copies of the built-in themes in your themes folder now update automatically when Healthify updates them
+
+### Fixed
+- Names from mods that colour them with old-style colour codes (like some boss names) no longer turn into a blurry blob, because their shadow now stays dark
+
 ## 1.2.0
 
 ### New

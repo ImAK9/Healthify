@@ -114,5 +114,6 @@ publishMods {
         server.set(false)
         optional("dynamic-difficulty-mod")
         if (!isModern) optional("l2hostility")
+        optional("champions-unofficial")
     }
 }

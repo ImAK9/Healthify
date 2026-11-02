@@ -87,13 +87,39 @@ public final class Themes {
     }
 
     private static void writeBuiltinsIfNew(Path folder) throws IOException {
-        if (Files.isDirectory(folder)) return;
+        if (Files.isDirectory(folder)) {
+            upgradeUntouchedBuiltins(folder);
+            return;
+        }
         Files.createDirectories(folder);
         for (Map.Entry<String, String> file : BuiltinThemes.FILES.entrySet()) {
             Files.writeString(folder.resolve(file.getKey() + ".json"), file.getValue(), StandardCharsets.UTF_8);
         }
         Files.writeString(folder.resolve("README.txt"), BuiltinThemes.README, StandardCharsets.UTF_8);
         Healthify.LOGGER.info("Healthify: created {} with the built-in themes", folder);
+    }
+
+    private static void upgradeUntouchedBuiltins(Path folder) throws IOException {
+        for (Map.Entry<String, List<String>> previous : BuiltinThemes.PREVIOUS.entrySet()) {
+            Path file = folder.resolve(previous.getKey() + ".json");
+            if (!Files.isRegularFile(file)) continue;
+            String current = normalize(Files.readString(file, StandardCharsets.UTF_8));
+            for (String old : previous.getValue()) {
+                if (current.equals(normalize(old))) {
+                    Files.writeString(file, BuiltinThemes.FILES.get(previous.getKey()), StandardCharsets.UTF_8);
+                    Healthify.LOGGER.info("Healthify: updated the built-in {} theme to its newest version", previous.getKey());
+                    break;
+                }
+            }
+        }
+        Path readme = folder.resolve("README.txt");
+        if (Files.isRegularFile(readme) && !normalize(Files.readString(readme, StandardCharsets.UTF_8)).equals(normalize(BuiltinThemes.README))) {
+            Files.writeString(readme, BuiltinThemes.README, StandardCharsets.UTF_8);
+        }
+    }
+
+    private static String normalize(String text) {
+        return text.replace("\r\n", "\n").strip();
     }
 
     private static String fingerprint(Path folder) throws IOException {
@@ -194,7 +220,10 @@ public final class Themes {
                 color(numbers, "damage", base == null ? null : base.damageColor()),
                 color(numbers, "bigHit", base == null ? null : base.bigHitColor()),
                 color(numbers, "kill", base == null ? null : base.killColor()),
-                color(numbers, "heal", base == null ? null : base.healColor()));
+                color(numbers, "heal", base == null ? null : base.healColor()),
+                numbers.has("outline") ? Integer.valueOf(color(numbers, "outline", null)) : (base == null ? null : base.numberOutline()),
+                words(numbers, "bigHitWords", base == null ? Theme.DEFAULT_BIG_HIT_WORDS : base.bigHitWords()),
+                words(numbers, "killWords", base == null ? Theme.DEFAULT_KILL_WORDS : base.killWords()));
     }
 
     private static JsonObject object(JsonObject json, String key) {
@@ -202,6 +231,18 @@ public final class Themes {
         if (value == null || value.isJsonNull()) return new JsonObject();
         if (!value.isJsonObject()) throw new IllegalArgumentException("\"" + key + "\" must be a { ... } section");
         return value.getAsJsonObject();
+    }
+
+    private static List<String> words(JsonObject json, String key, List<String> fallback) {
+        if (!json.has(key)) return fallback;
+        JsonElement value = json.get(key);
+        if (!value.isJsonArray()) throw new IllegalArgumentException("\"" + key + "\" must be a list of words, like [\"Crit!\", \"Boom!\"]");
+        List<String> out = new ArrayList<>();
+        for (JsonElement element : value.getAsJsonArray()) {
+            String word = element.getAsString().trim();
+            if (!word.isEmpty()) out.add(word);
+        }
+        return List.copyOf(out);
     }
 
     private static String string(JsonObject json, String key, String fallback) {
