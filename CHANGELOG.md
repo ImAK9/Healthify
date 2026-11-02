@@ -1,4 +1,4 @@
-## Healthify 1.2.0
+## 1.2.0
 
 ### New
 - **Redesigned config screen**: settings are grouped into tabs, with a panel that explains whatever setting you hover, plus Undo and Reset buttons. Styled to match Healthify, on both NeoForge and Fabric
@@ -7,7 +7,7 @@
 ### Changed
 - Level, Dynamic Difficulty and L2 Hostility settings are now together under the **Mod Support** tab
 
-## Healthify 1.1.0
+## 1.1.0
 
 ### New
 - **Fabric support** for 1.21.1, 26.1.2 and 26.3
@@ -29,7 +29,7 @@
 - Mob names no longer get hidden behind water and other fluids on 26.1.2 and 26.3
 - The damage trail now animates in the theme preview when opened from the main menu
 
-## Healthify 1.0.1
+## 1.0.1
 
 ### New
 - **API for mod developers**: other mods can add a name, prefix, header or subtitle to health bars
@@ -38,7 +38,7 @@
 - Works with any NeoForge 21.1.x version on 1.21.1, not just 21.1.265 and newer
 - Text shadows on bold names
 
-## Healthify 1.0.0
+## 1.0.0
 
 - First release for NeoForge 1.21.1, 26.1.2 and 26.3
 - RPG-style pixel health bars with the mob's name and health, RPG shading and a draining damage trail
