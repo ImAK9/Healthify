@@ -1,5 +1,5 @@
 {
-  "healthify.configuration.title": "Healthify Config",
+  "healthify.configuration.title": "Healthify Configuration",
   "healthify.configuration.section.healthify.client.toml": "Healthify Config",
   "healthify.configuration.section.healthify.client.toml.title": "Healthify Config",
   "healthify.configuration.general": "General",
@@ -86,6 +86,10 @@
   "healthify.themes.hint": "Make your own: copy a theme file in the themes folder and edit it",
   "healthify.themes.open_folder": "Open Themes Folder",
   "healthify.themes.errors": "%s theme file(s) have errors: see the game log",
-  "healthify.settings.title": "Healthify Settings",
-  "healthify.configuration.keepSizeBeyond": "Stop Shrinking Beyond (blocks)"
+  "healthify.configuration.keepSizeBeyond": "Stop Shrinking Beyond (blocks)",
+  "healthify.settings.undo": "Undo",
+  "healthify.settings.undo.tooltip": "Reverts changes on this screen only.",
+  "healthify.settings.reset": "Reset",
+  "healthify.settings.reset.tooltip": "Reverts everything on this screen to its default value.",
+  "healthify.settings.hint": "Hover over a setting to see what it does."
 }

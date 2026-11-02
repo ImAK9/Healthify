@@ -1,7 +1,11 @@
-## Healthify 1.1.1
+## Healthify 1.2.0
 
 ### New
+- **Redesigned config screen**: settings are grouped into tabs, with a panel that explains whatever setting you hover, plus Undo and Reset buttons. Styled to match Healthify, on both NeoForge and Fabric
 - **Stop Shrinking Beyond** option (General): bars keep the size they have at this distance, so far-away bars stay readable. Set to 0 (default) to have bars shrink with distance like before
+
+### Changed
+- Level, Dynamic Difficulty and L2 Hostility settings are now together under the **Mod Support** tab
 
 ## Healthify 1.1.0
 

@@ -3,12 +3,13 @@ package com.ak.healthify.client.theme;
 import com.ak.healthify.Config;
 import com.ak.healthify.client.DrawList;
 import com.ak.healthify.client.compat.DynamicDifficultyCompat;
+import com.ak.healthify.client.gui.Ui;
+import com.ak.healthify.client.gui.UiButton;
 import com.ak.healthify.client.settings.SettingsScreen;
 import com.ak.healthify.client.HealthBars;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -40,17 +41,12 @@ public class ThemeScreen extends Screen {
 
         int cx = this.width / 2;
         int buttonsY = panelBottom() + 12;
-        addRenderableWidget(Button.builder(Component.translatable("healthify.themes.previous"), b -> step(-1))
-                .bounds(cx - 155, buttonsY, 100, 20).build());
-        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, b -> onClose())
-                .bounds(cx - 50, buttonsY, 100, 20).build());
-        addRenderableWidget(Button.builder(Component.translatable("healthify.themes.next"), b -> step(1))
-                .bounds(cx + 55, buttonsY, 100, 20).build());
-        addRenderableWidget(Button.builder(Component.translatable("healthify.themes.open_folder"), b -> openThemesFolder())
-                .bounds(cx - 155, buttonsY + 24, 150, 20).build());
-        addRenderableWidget(Button.builder(Component.translatable("healthify.themes.all_settings"),
-                        b -> open(new SettingsScreen(this)))
-                .bounds(cx + 5, buttonsY + 24, 150, 20).build());
+        addRenderableWidget(new UiButton(cx - 155, buttonsY, 100, 20, Component.translatable("healthify.themes.previous"), b -> step(-1)));
+        addRenderableWidget(new UiButton(cx - 50, buttonsY, 100, 20, CommonComponents.GUI_DONE, b -> onClose()));
+        addRenderableWidget(new UiButton(cx + 55, buttonsY, 100, 20, Component.translatable("healthify.themes.next"), b -> step(1)));
+        addRenderableWidget(new UiButton(cx - 155, buttonsY + 24, 150, 20, Component.translatable("healthify.themes.open_folder"), b -> openThemesFolder()));
+        addRenderableWidget(new UiButton(cx + 5, buttonsY + 24, 150, 20, Component.translatable("healthify.themes.all_settings"),
+                b -> open(new SettingsScreen(this))));
     }
 
     private void step(int direction) {
@@ -100,21 +96,25 @@ public class ThemeScreen extends Screen {
 
     private void drawContents(Canvas canvas) {
         int cx = this.width / 2;
-        canvas.centered(this.title, cx, 15, 0xFFFFFFFF);
+        canvas.centered(this.title, cx, 15, Ui.TITLE);
         if (themes == null || themes.isEmpty()) return;
         index = Math.min(index, themes.size() - 1);
 
         Theme theme = themes.get(index);
-        canvas.centered(Component.literal(theme.name()), cx, panelTop() - 34, 0xFFFFE08A);
+        canvas.centered(Component.literal(theme.name()), cx, panelTop() - 42, 0xFFFFE08A);
         if (!theme.author().isEmpty()) {
-            canvas.centered(Component.translatable("healthify.themes.by", theme.author()), cx, panelTop() - 22, 0xFFAAAAAA);
+            canvas.centered(Component.translatable("healthify.themes.by", theme.author()), cx, panelTop() - 30, Ui.TEXT);
         }
-        canvas.centered(Component.translatable("healthify.themes.count", index + 1, themes.size()), cx, panelTop() - 10, 0xFF888888);
+        canvas.centered(Component.translatable("healthify.themes.count", index + 1, themes.size()), cx, panelTop() - 18, Ui.TEXT_DIM);
 
         int left = cx - 130;
         int right = cx + 130;
-        canvas.fill(left - 1, panelTop() - 1, right + 1, panelBottom() + 1, 0xFF6B5A3A);
-        canvas.fill(left, panelTop(), right, panelBottom(), 0xE0181410);
+        int x0 = left - 4;
+        int y0 = panelTop() - 4;
+        int x1 = right + 4;
+        int y1 = panelBottom() + 4;
+        canvas.fill(x0, y0, x1, y1, Ui.BORDER);
+        canvas.fill(x0 + 1, y0 + 1, x1 - 1, y1 - 1, Ui.PANEL);
 
         DrawList preview = HealthBars.layout(previewInfo(), theme, this.font);
         canvas.push(cx, panelBottom() - 16, PREVIEW_SCALE);
