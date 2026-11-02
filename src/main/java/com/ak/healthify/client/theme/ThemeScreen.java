@@ -3,6 +3,7 @@ package com.ak.healthify.client.theme;
 import com.ak.healthify.Config;
 import com.ak.healthify.client.DrawList;
 import com.ak.healthify.client.compat.DynamicDifficultyCompat;
+import com.ak.healthify.client.settings.SettingsScreen;
 import com.ak.healthify.client.HealthBars;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,8 +12,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 //? if >=26.1 {
 /*import net.minecraft.client.gui.GuiGraphicsExtractor;
 *///?} else {
@@ -24,14 +23,12 @@ public class ThemeScreen extends Screen {
     private static final int PREVIEW_TRAIL_KEY = -1;
     private static final float[] PREVIEW_HEALTH = {20.0F, 14.0F, 9.0F, 4.0F, 20.0F};
 
-    private final ModContainer container;
     private final Screen parent;
     private List<Theme> themes;
     private int index;
 
-    public ThemeScreen(ModContainer container, Screen parent) {
+    public ThemeScreen(Screen parent) {
         super(Component.translatable("healthify.themes.title"));
-        this.container = container;
         this.parent = parent;
     }
 
@@ -52,7 +49,7 @@ public class ThemeScreen extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("healthify.themes.open_folder"), b -> openThemesFolder())
                 .bounds(cx - 155, buttonsY + 24, 150, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("healthify.themes.all_settings"),
-                        b -> open(new ConfigurationScreen(container, this)))
+                        b -> open(new SettingsScreen(this)))
                 .bounds(cx + 5, buttonsY + 24, 150, 20).build());
     }
 

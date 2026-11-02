@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     id("net.neoforged.moddev")
+    id("me.modmuss50.mod-publish-plugin")
     idea
 }
 
@@ -11,7 +12,7 @@ val modVersion: String = sc.properties["mod.version"]
 
 version = "$modVersion+$mcVersion"
 group = sc.properties.get<String>("mod.group")
-base.archivesName = modId
+base.archivesName = "$modId-neoforge"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(if (isModern) 25 else 21)
 
@@ -59,7 +60,14 @@ val generateModMetadata = tasks.register<ProcessResources>("generateModMetadata"
     from(rootProject.file("src/main/templates"))
     into(layout.buildDirectory.dir("generated/sources/modMetadata"))
 }
-sourceSets.main { resources.srcDir(generateModMetadata) }
+sourceSets.main {
+    resources.srcDir(generateModMetadata)
+    java.exclude("com/ak/healthify/fabric/**")
+}
+
+tasks.processResources {
+    exclude("fabric.mod.json", "healthify.mixins.json")
+}
 neoForge.ideSyncTask(generateModMetadata)
 
 tasks.withType<JavaCompile>().configureEach {
@@ -75,11 +83,34 @@ tasks.register<Copy>("buildAndCollect") {
     description = "Builds the mod jar and copies it to build/libs/<mod version>/"
     from(tasks.named<Jar>("jar").flatMap { it.archiveFile })
     into(rootProject.layout.buildDirectory.dir("libs/$modVersion"))
+    rename { "[NeoForge] $modVersion - $mcVersion.jar" }
 }
 
 idea {
     module {
         isDownloadSources = true
         isDownloadJavadoc = true
+    }
+}
+
+publishMods {
+    val token = providers.environmentVariable("CURSEFORGE_TOKEN")
+    file.set(tasks.named<Jar>("jar").flatMap { it.archiveFile })
+    displayName.set("[NeoForge] $modVersion - $mcVersion")
+    version.set("$modVersion+$mcVersion-neoforge")
+    changelog.set(providers.fileContents(rootProject.layout.projectDirectory.file("CHANGELOG.md")).asText)
+    type.set(STABLE)
+    modLoaders.add("neoforge")
+    dryRun.set(token.map { it.isBlank() }.orElse(true))
+
+    curseforge {
+        projectId.set(sc.properties.get<String>("publish.curseforge_id"))
+        accessToken.set(token)
+        minecraftVersions.add(mcVersion)
+        javaVersions.add(if (isModern) JavaVersion.VERSION_25 else JavaVersion.VERSION_21)
+        client.set(true)
+        server.set(false)
+        optional("dynamic-difficulty-mod")
+        if (!isModern) optional("l2hostility")
     }
 }

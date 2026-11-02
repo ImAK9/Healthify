@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "${id}",
+  "version": "${version}",
+  "name": "${name}",
+  "description": "${description}",
+  "authors": ["HiAmAK"],
+  "contact": {
+    "sources": "https://github.com/ImAK9/Healthify",
+    "issues": "https://github.com/ImAK9/Healthify/issues"
+  },
+  "license": "${license}",
+  "icon": "healthify.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.ak.healthify.fabric.HealthifyFabric"],
+    "modmenu": ["com.ak.healthify.fabric.ModMenuIntegration"]
+  },
+  "mixins": ["healthify.mixins.json"],
+  "depends": {
+    "fabricloader": ">=${loader}",
+    "minecraft": "${minecraft}",
+    "fabric-api": "*",
+    "java": ">=21"
+  }
+}

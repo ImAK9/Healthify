@@ -1,7 +1,6 @@
 package com.ak.healthify.client;
 
 import com.ak.healthify.Config;
-import com.ak.healthify.Healthify;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,12 +26,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
-@EventBusSubscriber(modid = Healthify.MODID, value = Dist.CLIENT)
 public final class BarVisibility {
     private static final Map<Integer, Long> LAST_LOOKED_AT = new HashMap<>();
 
@@ -133,8 +127,7 @@ public final class BarVisibility {
         return LINE_OF_SIGHT.computeIfAbsent(entity.getId(), id -> player.hasLineOfSight(entity));
     }
 
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
+    public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         DamageTrail.cleanUp(mc.level == null);
         Config.ShowMode mode = Config.SHOW_MODE.get();

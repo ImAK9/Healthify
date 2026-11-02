@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "com.ak.healthify.fabric.mixin",
+  "compatibilityLevel": "${java}",
+  "client": [
+    "EntityRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,7 +1,6 @@
 package com.ak.healthify.client;
 
 import com.ak.healthify.Config;
-import com.ak.healthify.Healthify;
 import com.ak.healthify.client.theme.Theme;
 import com.ak.healthify.client.theme.Themes;
 import java.util.ArrayList;
@@ -18,12 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
-@EventBusSubscriber(modid = Healthify.MODID, value = Dist.CLIENT)
 public final class DamageNumbers {
     private static final float BASE_SCALE = 0.025F;
     private static final int MAX_POPUPS = 64;
@@ -40,8 +34,7 @@ public final class DamageNumbers {
 
     private DamageNumbers() {}
 
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
+    public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) {
             LAST_HEALTH.clear();

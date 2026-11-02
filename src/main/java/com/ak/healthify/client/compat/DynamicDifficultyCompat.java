@@ -1,13 +1,13 @@
 package com.ak.healthify.client.compat;
 
 import com.ak.healthify.Healthify;
+import com.ak.healthify.platform.Platform;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.fml.ModList;
 
 public final class DynamicDifficultyCompat {
     public static final String MOD_ID = "dynamic_difficulty";
@@ -55,7 +55,7 @@ public final class DynamicDifficultyCompat {
     private static void init() {
         if (initialized) return;
         initialized = true;
-        if (!ModList.get().isLoaded(MOD_ID)) return;
+        if (!Platform.isModLoaded(MOD_ID)) return;
         try {
             MethodHandles.Lookup lookup = MethodHandles.publicLookup();
             Class<?> api = Class.forName(API_CLASS);

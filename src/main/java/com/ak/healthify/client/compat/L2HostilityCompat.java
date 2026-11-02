@@ -4,6 +4,7 @@ import com.ak.healthify.Config;
 import com.ak.healthify.Healthify;
 import com.ak.healthify.client.DrawList;
 import com.ak.healthify.client.theme.Theme;
+import com.ak.healthify.platform.Platform;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -19,14 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
-@EventBusSubscriber(modid = Healthify.MODID, value = Dist.CLIENT)
 public final class L2HostilityCompat {
     public static final String MOD_ID = "l2hostility";
 
@@ -56,10 +50,10 @@ public final class L2HostilityCompat {
     private static Method getFullDesc;
     private static Method levelOf;
     private static Object clientConfig;
-    private static ModConfigSpec.BooleanValue showLevelOverHead;
-    private static ModConfigSpec.BooleanValue showTraitOverHead;
-    private static ModConfigSpec.IntValue levelColor;
-    private static ModConfigSpec.IntValue levelColorAbyss;
+    private static Setting showLevelOverHead;
+    private static Setting showTraitOverHead;
+    private static Setting levelColor;
+    private static Setting levelColorAbyss;
     private static boolean hidLevel;
     private static boolean hidTraits;
 
@@ -113,8 +107,30 @@ public final class L2HostilityCompat {
         }
     }
 
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
+    private record Setting(Object handle, Method get, Method set) {
+        static Setting of(Object config, String field) {
+            try {
+                Object handle = config.getClass().getField(field).get(config);
+                return new Setting(handle, handle.getClass().getMethod("get"), handle.getClass().getMethod("set", Object.class));
+            } catch (Throwable t) {
+                return null;
+            }
+        }
+
+        Object read() throws ReflectiveOperationException {
+            return get.invoke(handle);
+        }
+
+        void write(Object value) throws ReflectiveOperationException {
+            set.invoke(handle, value);
+        }
+
+        int color() throws ReflectiveOperationException {
+            return 0xFF000000 | (((Number) read()).intValue() & 0xFFFFFF);
+        }
+    }
+
+    public static void tick() {
         if (Minecraft.getInstance().level != null) updateOverheadText(Config.HIDE_L2_OVERHEAD.get());
     }
 
@@ -146,13 +162,13 @@ public final class L2HostilityCompat {
 
     private static int colorFor(int level, boolean fullDrop) {
         try {
-            if (fullDrop && levelColorAbyss != null) return 0xFF000000 | (levelColorAbyss.get() & 0xFFFFFF);
+            if (fullDrop && levelColorAbyss != null) return levelColorAbyss.color();
         } catch (Throwable ignored) {
         }
         Integer relative = relativeColor(level);
         if (relative != null) return relative;
         try {
-            if (levelColor != null) return 0xFF000000 | (levelColor.get() & 0xFFFFFF);
+            if (levelColor != null) return levelColor.color();
         } catch (Throwable ignored) {
         }
         return 0xFFFFFFFF;
@@ -187,16 +203,16 @@ public final class L2HostilityCompat {
         }
     }
 
-    private static boolean apply(ModConfigSpec.BooleanValue value, boolean hide, boolean hidByUs) {
+    private static boolean apply(Setting value, boolean hide, boolean hidByUs) throws ReflectiveOperationException {
         if (value == null) return false;
         if (hide) {
-            if (value.get()) {
-                value.set(false);
+            if (Boolean.TRUE.equals(value.read())) {
+                value.write(Boolean.FALSE);
                 return true;
             }
             return hidByUs;
         }
-        if (hidByUs) value.set(true);
+        if (hidByUs) value.write(Boolean.TRUE);
         return false;
     }
 
@@ -238,7 +254,7 @@ public final class L2HostilityCompat {
     private static void init() {
         if (initialized) return;
         initialized = true;
-        if (!ModList.get().isLoaded(MOD_ID)) return;
+        if (!Platform.isModLoaded(MOD_ID)) return;
         try {
             Class<?> miscs = Class.forName("dev.xkmc.l2hostility.init.registrate.LHMiscs");
             Object mob = miscs.getField("MOB").get(null);
@@ -271,10 +287,10 @@ public final class L2HostilityCompat {
         }
         try {
             clientConfig = Class.forName("dev.xkmc.l2hostility.init.data.LHConfig").getField("CLIENT").get(null);
-            showLevelOverHead = (ModConfigSpec.BooleanValue) clientConfig.getClass().getField("showLevelOverHead").get(clientConfig);
-            showTraitOverHead = (ModConfigSpec.BooleanValue) clientConfig.getClass().getField("showTraitOverHead").get(clientConfig);
-            levelColor = (ModConfigSpec.IntValue) clientConfig.getClass().getField("overHeadLevelColor").get(clientConfig);
-            levelColorAbyss = (ModConfigSpec.IntValue) clientConfig.getClass().getField("overHeadLevelColorAbyss").get(clientConfig);
+            showLevelOverHead = Setting.of(clientConfig, "showLevelOverHead");
+            showTraitOverHead = Setting.of(clientConfig, "showTraitOverHead");
+            levelColor = Setting.of(clientConfig, "overHeadLevelColor");
+            levelColorAbyss = Setting.of(clientConfig, "overHeadLevelColorAbyss");
         } catch (Throwable t) {
             clientConfig = null;
         }

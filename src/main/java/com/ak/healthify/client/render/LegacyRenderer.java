@@ -22,19 +22,11 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.RenderNameTagEvent;
-import net.neoforged.neoforge.common.util.TriState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 
-@EventBusSubscriber(modid = Healthify.MODID, value = Dist.CLIENT)
 public final class LegacyRenderer {
     private static final int LIGHT = 0xF000F0;
     private static final ResourceLocation WHITE_TEXTURE =
@@ -43,25 +35,8 @@ public final class LegacyRenderer {
 
     private LegacyRenderer() {}
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onRenderNameTag(RenderNameTagEvent event) {
-        switch (NameTags.handle(event.getEntity(), event.getContent())) {
-            case HIDE -> event.setCanRender(TriState.FALSE);
-            case RESET -> {
-                event.setContent(event.getOriginalContent());
-                event.setCanRender(TriState.DEFAULT);
-            }
-            case KEEP -> { }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onRenderLevelStage(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) return;
-
+    public static void render(Vec3 camera, float partialTick, Matrix4f modelViewMatrix) {
         Minecraft mc = Minecraft.getInstance();
-        Vec3 camera = event.getCamera().getPosition();
-        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         List<Placed> bars = HealthBars.collect(partialTick, camera);
         NameTags.clear();
         List<Placed> numbers = DamageNumbers.collect(camera);
@@ -71,7 +46,7 @@ public final class LegacyRenderer {
 
         Matrix4fStack modelView = RenderSystem.getModelViewStack();
         modelView.pushMatrix();
-        modelView.mul(event.getModelViewMatrix());
+        modelView.mul(modelViewMatrix);
         RenderSystem.applyModelViewMatrix();
 
         boolean depthTestWasOn = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
