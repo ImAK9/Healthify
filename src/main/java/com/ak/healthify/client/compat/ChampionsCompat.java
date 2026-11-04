@@ -27,6 +27,7 @@ public final class ChampionsCompat {
     private static final int MAX_STARS = 9;
     private static final int TEXT_HEIGHT = 7;
     private static final float COUNT_SCALE = 0.75F;
+    private static final TextColor AFFIX_COLOR = TextColor.fromRgb(0xCFCFCF);
 
     public record Info(Component prefix, TextColor color, Component affixes, int stars, int starColor) {
         public static final Info NONE = new Info(null, null, null, 0, 0);
@@ -117,7 +118,7 @@ public final class ChampionsCompat {
             if (i > 0) line.append(Component.literal(" · "));
             line.append(parts.get(i));
         }
-        return line;
+        return line.withStyle(style -> style.withColor(AFFIX_COLOR));
     }
 
     private static void init() {

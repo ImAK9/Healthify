@@ -62,7 +62,7 @@ public class ThemeScreen extends Screen {
     }
 
     private void open(Screen screen) {
-        //? if >=26.3 {
+        //? if >=26.2 {
         /*this.minecraft.gui.setScreen(screen);
         *///?} else {
         this.minecraft.setScreen(screen);

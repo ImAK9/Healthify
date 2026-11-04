@@ -51,7 +51,7 @@ public abstract class EntityRendererMixin<T extends Entity> {
     }
 }
 *///?}
-//? if fabric && >=26.1 && <26.3 {
+//? if fabric && >=26.1 && <26.2 {
 /*import com.ak.healthify.client.NameTags;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -95,7 +95,7 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
     }
 }
 *///?}
-//? if fabric && >=26.3 {
+//? if fabric && >=26.2 {
 /*import com.ak.healthify.client.NameTags;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;

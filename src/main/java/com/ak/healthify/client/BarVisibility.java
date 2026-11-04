@@ -70,7 +70,7 @@ public final class BarVisibility {
     }
 
     private static boolean isHudHidden(Minecraft mc) {
-        //? if >=26.3 {
+        //? if >=26.2 {
         /*return mc.gameRenderer.gameRenderState().guiRenderState.isHudHidden;
         *///?} else {
         return mc.options.hideGui;

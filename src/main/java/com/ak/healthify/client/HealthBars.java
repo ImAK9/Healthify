@@ -7,14 +7,21 @@ import com.ak.healthify.client.compat.DynamicDifficultyCompat;
 import com.ak.healthify.client.compat.L2HostilityCompat;
 import com.ak.healthify.client.theme.Theme;
 import com.ak.healthify.client.theme.Themes;
+import com.ak.healthify.config.ConfigSpec;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+//? if >=26.2 {
+/*import net.minecraft.world.entity.EntityTypes;
+*///?} else {
 import net.minecraft.world.entity.EntityType;
+//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -31,12 +38,35 @@ public final class HealthBars {
     }
 
     private static final float SUBTITLE_SCALE = 0.75F;
+
+    private record Cached(int tick, int revision, Theme theme, BarInfo info, float trail, DrawList draw) {}
+
+    private static Map<Integer, Cached> CACHE = new HashMap<>();
+
+    private static DrawList cachedLayout(LivingEntity entity, Theme theme, Font font, int revision, Map<Integer, Cached> next) {
+        Cached old = CACHE.get(entity.getId());
+        boolean sameTick = old != null && old.tick() == entity.tickCount && old.revision() == revision;
+        BarInfo info = sameTick ? old.info() : infoFor(entity);
+        float trail = trailFor(info);
+        DrawList draw;
+        if (old != null && old.revision() == revision && old.theme() == theme && old.trail() == trail && old.info().equals(info)) {
+            draw = old.draw();
+        } else {
+            draw = layout(info, theme, font, trail);
+        }
+        next.put(entity.getId(), new Cached(entity.tickCount, revision, theme, info, trail, draw));
+        return draw;
+    }
     private static final int HEADER_OUTLINE = 0xFF2A2A2A;
 
     private static final float HUSK_RENDER_SCALE = 1.0625F;
 
     private static float renderScale(LivingEntity entity) {
+        //? if >=26.2 {
+        /*return entity.getType() == EntityTypes.HUSK ? HUSK_RENDER_SCALE : 1.0F;
+        *///?} else {
         return entity.getType() == EntityType.HUSK ? HUSK_RENDER_SCALE : 1.0F;
+        //?}
     }
 
     private HealthBars() {}
@@ -50,6 +80,8 @@ public final class HealthBars {
         float scale = BASE_SCALE * Config.SCALE.get().floatValue();
         float heightAbove = Config.HEIGHT_ABOVE_MOB.get().floatValue();
         double keepSizeBeyond = Config.KEEP_SIZE_BEYOND.get();
+        int revision = ConfigSpec.revision();
+        Map<Integer, Cached> next = new HashMap<>(Math.max(16, CACHE.size() * 2));
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (!(entity instanceof LivingEntity living) || !BarVisibility.shouldShowBar(living)) continue;
 
@@ -65,8 +97,9 @@ public final class HealthBars {
             if (keepSizeBeyond > 0.0 && distanceSq > keepSizeBeyond * keepSizeBeyond) {
                 barScale = (float) (scale * Math.sqrt(distanceSq) / keepSizeBeyond);
             }
-            bars.add(new Placed(x, y, z, 0.0F, barScale, layout(infoFor(living), theme, mc.font), distanceSq));
+            bars.add(new Placed(x, y, z, 0.0F, barScale, cachedLayout(living, theme, mc.font, revision, next), distanceSq));
         }
+        CACHE = next;
         bars.sort((a, b) -> Double.compare(b.distanceSq(), a.distanceSq()));
         return bars;
     }
@@ -97,6 +130,16 @@ public final class HealthBars {
     }
 
     public static DrawList layout(BarInfo info, Theme theme, Font font) {
+        return layout(info, theme, font, trailFor(info));
+    }
+
+    private static float trailFor(BarInfo info) {
+        float fraction = Numbers.clamp(info.health() / info.maxHealth(), 0.0F, 1.0F);
+        if (!Config.SHOW_BAR.get() || !Config.DAMAGE_TRAIL.get()) return fraction;
+        return DamageTrail.update(info.trailKey(), fraction);
+    }
+
+    private static DrawList layout(BarInfo info, Theme theme, Font font, float trailFraction) {
         DrawList out = new DrawList();
         boolean shadow = theme.textShadow();
 
@@ -112,7 +155,6 @@ public final class HealthBars {
         float maxHealth = info.maxHealth();
         if (Config.SHOW_BAR.get()) {
             float fraction = Numbers.clamp(health / maxHealth, 0.0F, 1.0F);
-            float trailFraction = Config.DAMAGE_TRAIL.get() ? DamageTrail.update(info.trailKey(), fraction) : fraction;
             float left = defaultLeft + Config.BAR_X.get();
             float top = defaultTop + Config.BAR_Y.get();
             BarShape.emit(out, theme, left, top, barWidth, fraction, trailFraction);

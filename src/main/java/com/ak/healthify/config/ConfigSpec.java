@@ -23,12 +23,17 @@ public final class ConfigSpec {
     private final List<ConfigValue<?>> values;
     private Path file;
     private long lastWritten = Long.MIN_VALUE;
+    private static int revision;
     private long lastCheck;
 
     private ConfigSpec(String fileName, List<ConfigValue<?>> values) {
         this.fileName = fileName;
         this.values = List.copyOf(values);
         for (ConfigValue<?> value : this.values) value.spec = this;
+    }
+
+    public static int revision() {
+        return revision;
     }
 
     public List<ConfigValue<?>> values() {
@@ -66,6 +71,7 @@ public final class ConfigSpec {
     }
 
     private void reload() {
+        revision++;
         boolean needsSave = false;
         Map<String, Object> data = Map.of();
         if (Files.exists(file)) {
@@ -132,7 +138,10 @@ public final class ConfigSpec {
 
         public void set(T newValue) {
             T checked = newValue == null ? null : read(toRaw(newValue));
-            if (checked != null) value = checked;
+            if (checked != null) {
+                value = checked;
+                revision++;
+            }
         }
 
         public void save() {

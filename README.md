@@ -75,7 +75,7 @@ on the client for each mob with a bar, so keep it cheap.
 
 |            |                                   |
 | ---------- |---------------------------------- |
-| <strong>Minecraft</strong> |1.21.1, 26.1.2, 26.3               |
+| <strong>Minecraft</strong> |1.21.1, 26.1.2, 26.2, 26.3         |
 | <strong>Mod loader</strong> |NeoForge                           |
 | <strong>Side</strong> |Client only: servers don't need it |
 | <strong>Works with</strong> |Iris, Sodium and shader packs      |

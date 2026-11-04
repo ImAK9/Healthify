@@ -52,7 +52,7 @@ val generateModMetadata = tasks.register<ProcessResources>("generateModMetadata"
         "mod_license" to sc.properties.get<String>("mod.license"),
         "mod_version" to modVersion,
         "loader_lines" to (if (isModern) "" else "modLoader=\"javafml\"\nloaderVersion=\"[1,)\""),
-        "logo_lines" to (if (sc.current.parsed >= "26.3") "iconFile=\"healthify.png\""
+        "logo_lines" to (if (sc.current.parsed >= "26.2") "iconFile=\"healthify.png\""
                          else "logoFile=\"healthify.png\"\nlogoBlur=false"),
     )
     inputs.properties(replaceProperties)
