@@ -34,7 +34,7 @@ public final class Config {
 
     public static final ConfigSpec.DoubleValue MAX_DISTANCE = BUILDER
             .comment("Bars are only shown for mobs within this many blocks")
-            .defineInRange("maxDistance", 8.0, 1.0, 256.0);
+            .defineInRange("maxDistance", 16.0, 1.0, 256.0);
 
     public static final ConfigSpec.DoubleValue LOOK_LINGER_SECONDS = BUILDER
             .comment("LOOKING_AT modes: how many seconds a bar stays after you look away from a mob (looking at another mob switches instantly)")
@@ -248,6 +248,14 @@ public final class Config {
 
     static { BUILDER.pop(); }
 
+    static { BUILDER.push("dungeonDifficulty"); }
+
+    public static final ConfigSpec.BooleanValue SHOW_DUNGEON_DIFFICULTY = BUILDER
+            .comment("Show the Dungeon Difficulty area and level under the bar, like Dungeon 5 (needs Dungeon Difficulty and Dynamic Difficulty)")
+            .define("showDifficulty", true);
+
+    static { BUILDER.pop(); }
+
     static { BUILDER.push("l2Hostility"); }
 
     public static final ConfigSpec.BooleanValue SHOW_L2_LEVEL = BUILDER
@@ -280,8 +288,8 @@ public final class Config {
             .defineEnum("rankStyle", ChampionRank.STARS);
 
     public static final ConfigSpec.BooleanValue COLOR_CHAMPION_NAME = BUILDER
-            .comment("Colour a champion's name in its rank colour")
-            .define("colorName", true);
+            .comment("Colour a champion's name in its rank colour (off keeps names white, the stars still show the colour)")
+            .define("colorName", false);
 
     public static final ConfigSpec.BooleanValue SHOW_CHAMPION_AFFIXES = BUILDER
             .comment("Show a champion's affixes above its name")

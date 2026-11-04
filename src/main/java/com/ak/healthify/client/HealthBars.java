@@ -2,6 +2,7 @@ package com.ak.healthify.client;
 
 import com.ak.healthify.Config;
 import com.ak.healthify.client.compat.ChampionsCompat;
+import com.ak.healthify.client.compat.DungeonDifficultyCompat;
 import com.ak.healthify.client.compat.DynamicDifficultyCompat;
 import com.ak.healthify.client.compat.L2HostilityCompat;
 import com.ak.healthify.client.theme.Theme;
@@ -13,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -29,6 +31,13 @@ public final class HealthBars {
     }
 
     private static final float SUBTITLE_SCALE = 0.75F;
+    private static final int HEADER_OUTLINE = 0xFF2A2A2A;
+
+    private static final float HUSK_RENDER_SCALE = 1.0625F;
+
+    private static float renderScale(LivingEntity entity) {
+        return entity.getType() == EntityType.HUSK ? HUSK_RENDER_SCALE : 1.0F;
+    }
 
     private HealthBars() {}
 
@@ -46,7 +55,7 @@ public final class HealthBars {
 
             Vec3 pos = living.getPosition(partialTick);
             double x = pos.x;
-            double y = pos.y + living.getBbHeight() + heightAbove;
+            double y = pos.y + living.getBbHeight() * renderScale(living) + heightAbove;
             double z = pos.z;
             double dx = x - camera.x;
             double dy = y - camera.y;
@@ -81,8 +90,9 @@ public final class HealthBars {
         ChampionsCompat.Info champion = ChampionsCompat.forBar(entity);
         name = ChampionsCompat.decorateName(name, champion);
         Component header = extra.header() != null ? extra.header() : champion.affixes();
+        Component subtitle = extra.subtitle() != null ? extra.subtitle() : DungeonDifficultyCompat.forBar(entity);
         return new BarInfo(name, Math.max(0.0F, entity.getHealth()), Math.max(1.0F, entity.getMaxHealth()),
-                levelText, levelColor, entity.getId(), extra.prefix(), header, extra.subtitle(), l2.traits(),
+                levelText, levelColor, entity.getId(), extra.prefix(), header, subtitle, l2.traits(),
                 champion.stars(), champion.starColor());
     }
 
@@ -166,8 +176,8 @@ public final class HealthBars {
         }
         if (info.header() != null) {
             float headerBottom = nameLineY + nameOffsetY - 2 - (levelText != null && levelPos == Config.LevelPosition.ABOVE_NAME ? font.lineHeight : 0);
-            out.scaledText(info.header(), -font.width(info.header()) / 2.0F, -TEXT_HEIGHT - 1, theme.nameColor(),
-                    nameOffsetX, headerBottom, SUBTITLE_SCALE, shadow);
+            out.outlinedText(info.header(), -font.width(info.header()) / 2.0F, -TEXT_HEIGHT - 1, theme.nameColor(),
+                    nameOffsetX, headerBottom, SUBTITLE_SCALE, HEADER_OUTLINE);
         }
         if (!info.traits().isEmpty() || info.stars() > 0) {
             boolean levelAbove = levelText != null && levelPos == Config.LevelPosition.ABOVE_NAME;
@@ -190,6 +200,8 @@ public final class HealthBars {
         if (info.subtitle() != null) {
             out.scaledText(info.subtitle(), -font.width(info.subtitle()) / 2.0F, 0.0F, theme.nameColor(),
                     Config.BAR_X.get(), belowBar, SUBTITLE_SCALE, shadow);
+            float bottom = belowBar + TEXT_HEIGHT * SUBTITLE_SCALE;
+            if (bottom > 0.0F) out.shiftY(-bottom);
         }
         return out;
     }

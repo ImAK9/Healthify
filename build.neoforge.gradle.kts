@@ -112,7 +112,7 @@ publishMods {
         javaVersions.add(if (isModern) JavaVersion.VERSION_25 else JavaVersion.VERSION_21)
         client.set(true)
         server.set(false)
-        optional("dynamic-difficulty-mod")
+        optional("dynamic-difficulty-mod", "dungeon-difficulty")
         if (!isModern) optional("l2hostility")
         optional("champions-unofficial")
     }

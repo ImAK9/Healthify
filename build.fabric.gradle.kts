@@ -113,6 +113,6 @@ publishMods {
         client.set(true)
         server.set(false)
         requires("fabric-api")
-        optional("dynamic-difficulty-mod", "modmenu")
+        optional("dynamic-difficulty-mod", "dungeon-difficulty", "modmenu")
     }
 }

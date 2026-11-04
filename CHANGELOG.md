@@ -1,3 +1,17 @@
+## 1.4.0
+
+### New
+- **Dungeon Difficulty support** (with Dynamic Difficulty installed): mobs scaled by Dungeon Difficulty show their area and level under the bar, like "Dungeon 5", with Dungeon Difficulty's own icons and a colour from green to crimson as it gets harder (can be turned off under Mod Support)
+
+### Changed
+- Bars now show for mobs up to 16 blocks away by default, up from 8 (existing configs keep their own setting)
+- Champions: names stay white by default and only the stars use the rank colour, so a yellow name no longer sits under yellow stars (turn Rank Coloured Name back on under Mod Support if you liked it)
+- The small line above the name (like Champions affixes) now has a thin dark outline, so it stays readable against bright skies
+- Bars move up a little when a mob has a line under its bar (like the Dungeon Difficulty level), so the line no longer covers the mob's head
+
+### Fixed
+- Husk bars no longer sit low on their heads, because husks are drawn bigger than their hitbox
+
 ## 1.3.0
 
 ### New

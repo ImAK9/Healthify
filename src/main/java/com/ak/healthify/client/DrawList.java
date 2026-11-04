@@ -32,6 +32,13 @@ public final class DrawList {
         quads.add(new Quad(x0, y0, x1, y1, color, texture, u0, v0, u1, v1));
     }
 
+    public void shiftY(float dy) {
+        if (dy == 0.0F) return;
+        quads.replaceAll(q -> new Quad(q.x0(), q.y0() + dy, q.x1(), q.y1() + dy, q.color(), q.texture(), q.u0(), q.v0(), q.u1(), q.v1()));
+        underlays.replaceAll(t -> new Text(t.text(), t.x(), t.y(), t.color(), t.originX(), t.originY() + dy, t.scale()));
+        texts.replaceAll(t -> new Text(t.text(), t.x(), t.y(), t.color(), t.originX(), t.originY() + dy, t.scale()));
+    }
+
     public void text(Component text, float x, float y, int color, boolean shadow) {
         scaledText(text, x, y, color, 0.0F, 0.0F, 1.0F, shadow);
     }
@@ -40,6 +47,15 @@ public final class DrawList {
         if (shadow) {
             underlays.add(new Text(shadowOf(text), x + 1, y + 1, shadowColor(color), originX, originY, scale));
         }
+        texts.add(new Text(text, x, y, color, originX, originY, scale));
+    }
+
+    public void outlinedText(Component text, float x, float y, int color, float originX, float originY, float scale, int outlineColor) {
+        Component plain = shadowOf(text);
+        underlays.add(new Text(plain, x - 1, y, outlineColor, originX, originY, scale));
+        underlays.add(new Text(plain, x + 1, y, outlineColor, originX, originY, scale));
+        underlays.add(new Text(plain, x, y - 1, outlineColor, originX, originY, scale));
+        underlays.add(new Text(plain, x, y + 1, outlineColor, originX, originY, scale));
         texts.add(new Text(text, x, y, color, originX, originY, scale));
     }
 
